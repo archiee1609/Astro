@@ -1,4 +1,4 @@
-# ॐ Vedic Jyotish & Sankhya Numerology Application
+# ॐ Vedic Jyotish & Sankhya Numerology Application - Created By Archiman
 
 A high-precision Python-based application for **Hindu Vedic Astrology (Parashari Jyotish)** and **Vedic & Chaldean Numerology (Sankhya Shastra)** with **Predictive Event Timelines**, **Live Internet-Powered Astronomical Precision**, and an interactive **Streamlit Web Dashboard**.
 
