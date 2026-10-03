@@ -14,6 +14,7 @@ from rich.progress import Progress, SpinnerColumn, TextColumn
 from rich.text import Text
 
 from core.analyzer import AstroAnalyzer
+from core.report_exporter import ReportExporter
 
 console = Console()
 
@@ -54,11 +55,31 @@ def run_cli_interactive():
 
     # Prompt for export
     console.print()
-    if Prompt.ask("[bold yellow]Would you like to export this full report to a JSON file?[/bold yellow]", choices=["y", "n"], default="n") == "y":
-        filename = f"kundli_{full_name.replace(' ', '_').lower()}.json"
-        with open(filename, "w", encoding="utf-8") as f:
-            json.dump(report, f, indent=2, ensure_ascii=False)
-        console.print(f"[bold green]✓ Report exported successfully to [white]{filename}[/white]![/bold green]")
+    export_choice = Prompt.ask(
+        "[bold yellow]Would you like to export the complete report?[/bold yellow]\n"
+        "[dim]Options: [bold]html[/bold] (Print-to-PDF ready web report), [bold]md[/bold] (Markdown document), [bold]json[/bold] (Raw data), [bold]all[/bold] (All 3 formats), [bold]n[/bold] (Skip)[/dim]",
+        choices=["html", "md", "json", "all", "n"],
+        default="html"
+    )
+    if export_choice != "n":
+        safe_name = full_name.replace(' ', '_').lower()
+        exported_files = []
+        if export_choice in ("html", "all"):
+            h_path = f"kundli_{safe_name}.html"
+            ReportExporter.export_to_file(report, h_path, "html")
+            exported_files.append(h_path)
+        if export_choice in ("md", "all"):
+            m_path = f"kundli_{safe_name}.md"
+            ReportExporter.export_to_file(report, m_path, "markdown")
+            exported_files.append(m_path)
+        if export_choice in ("json", "all"):
+            j_path = f"kundli_{safe_name}.json"
+            ReportExporter.export_to_file(report, j_path, "json")
+            exported_files.append(j_path)
+        
+        console.print(f"\n[bold green]✓ Complete report successfully exported to:[/bold green]")
+        for fpath in exported_files:
+            console.print(f"  • [bold white]{fpath}[/bold white]")
 
 def display_full_report(report: dict):
     user = report["user_input"]
@@ -250,6 +271,69 @@ def display_full_report(report: dict):
 
         console.print("\n")
         console.print(tl_table)
+
+        # 9. Key Life Milestones Chronology
+        milestones = tl.get("life_milestones", [])
+        if milestones:
+            ms_table = Table(title="[bold gold1]✦ CHRONOLOGICAL LIFE MILESTONES & TRANSIT WINDOWS ✦[/bold gold1]", border_style="gold1")
+            ms_table.add_column("Period", style="bold cyan", width=14)
+            ms_table.add_column("Age Window", style="yellow", width=14)
+            ms_table.add_column("Milestone / Domain", style="bold green", width=26)
+            ms_table.add_column("Astrological Basis & Prediction", style="white")
+            ms_table.add_column("Vedic Remedy", style="bright_magenta", width=26)
+
+            for m in milestones[:7]:
+                ms_table.add_row(
+                    f"{m.get('start_date', '')}\nto {m.get('end_date', '')}",
+                    m.get("age_window", ""),
+                    f"{m.get('title', '')}\n[dim]{m.get('status_badge', '')}[/dim]",
+                    f"[bold yellow]{m.get('astrological_basis', '')}[/bold yellow]\n{m.get('prediction_narrative', '')}",
+                    m.get("vedic_remedy", "")
+                )
+            console.print("\n")
+            console.print(ms_table)
+
+        # 10. Pratyantardasha Timeline (Granular Sub-periods)
+        pds = tl.get("pratyantardashas", [])
+        if pds:
+            pd_table = Table(title="[bold gold1]✦ ACTIVE DASHA PRATYANTARDASHA TIMELINE (GRANULAR SUB-PERIODS) ✦[/bold gold1]", border_style="bright_yellow")
+            pd_table.add_column("Span (Start - End)", style="bold cyan", width=24)
+            pd_table.add_column("Sub-Lord (PD)", style="bold green", width=16)
+            pd_table.add_column("Period Theme & Impact", style="white")
+            pd_table.add_column("Vedic Actionable Guidance", style="yellow", width=28)
+            pd_table.add_column("Status", style="bold gold1", width=16)
+
+            for pd in pds[:6]:
+                pd_table.add_row(
+                    f"{pd.get('start_date', '')} to\n{pd.get('end_date', '')}",
+                    f"{pd.get('pratyantardasha', '')}\n[dim]({pd.get('duration_days', '')}d)[/dim]",
+                    f"[bold]{pd.get('focus_theme', '')}[/bold]",
+                    pd.get("guidance", ""),
+                    pd.get("status_badge", "")
+                )
+            console.print("\n")
+            console.print(pd_table)
+
+        # 11. 10-Year Annual Predictive Roadmap
+        ann = tl.get("annual_forecast", [])
+        if ann:
+            ann_table = Table(title="[bold gold1]✦ 10-YEAR ANNUAL PREDICTIVE ROADMAP ✦[/bold gold1]", border_style="gold1")
+            ann_table.add_column("Year", style="bold cyan", width=8)
+            ann_table.add_column("Age", style="yellow", width=8)
+            ann_table.add_column("Dasha Phase", style="bold green", width=18)
+            ann_table.add_column("Primary Karmic Theme & Outlook", style="white")
+            ann_table.add_column("Key Recommendation", style="bright_magenta", width=26)
+
+            for y in ann[:6]:
+                ann_table.add_row(
+                    str(y.get("year", "")),
+                    f"Age {y.get('age_at_midyear', '')}",
+                    f"{y.get('dasha', '')}\n[dim]{y.get('status_badge', '')}[/dim]",
+                    f"[bold yellow]{y.get('primary_theme', '')}[/bold yellow]\n• Career: {y.get('career_outlook', '')}\n• Wealth: {y.get('wealth_outlook', '')}",
+                    y.get("key_recommendation", "")
+                )
+            console.print("\n")
+            console.print(ann_table)
 
     # 8. Life Guidance & Vedic Remedies Panel
     guidance_text = (

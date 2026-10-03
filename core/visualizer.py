@@ -112,7 +112,6 @@ class ChartVisualizer:
         }
 
         svg_elements = []
-        svg_elements = []
         # Definitions for gradients and shadows
         svg_elements.append("""<defs>
 <radialGradient id="celestialBg" cx="50%" cy="50%" r="70%">
@@ -261,6 +260,7 @@ class ChartVisualizer:
         for h in range(1, 13):
             hd = houses[h]
             p_list = ", ".join(hd["planets"]) if hd["planets"] else "Empty"
-            lines.append(f"│ House {h:2d} ({hd['sign_name'][:8]:8}): {p_list:39s}│")
+            p_display = p_list if len(p_list) <= 39 else p_list[:36] + "..."
+            lines.append(f"│ House {h:2d} ({hd['sign_name'][:8]:8}): {p_display:39s}│")
         lines.append("└──────────────────────────────┴──────────────────────────────┘")
         return "\n".join(lines)

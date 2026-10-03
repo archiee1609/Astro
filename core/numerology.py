@@ -154,8 +154,8 @@ class NumerologyEngine:
         Evaluates the tripartite harmony between Psychic Number (Mulank),
         Destiny Number (Bhagyank), and Name Number (Namank).
         """
-        mul_prof = NUMEROLOGY_PROFILES[mulank]
-        bhag_prof = NUMEROLOGY_PROFILES[bhagyank]
+        mul_prof = NUMEROLOGY_PROFILES.get(mulank, NUMEROLOGY_PROFILES[1])
+        bhag_prof = NUMEROLOGY_PROFILES.get(bhagyank, NUMEROLOGY_PROFILES[1])
 
         # Check Mulank vs Bhagyank
         if bhagyank in mul_prof["friendly_numbers"]:

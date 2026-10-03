@@ -4,9 +4,9 @@ Integrates Vimshottari Dashas, Bhava lordships, planetary karakatwas, yogas,
 and Gochara (transits) to compute detailed chronological event timelines.
 """
 
-from datetime import datetime, date
+from datetime import datetime, date, timedelta
 from typing import Dict, Any, List, Optional, Tuple
-from core.constants import SIGN_NAMES, SIGN_RULERS, PLANETS
+from core.constants import SIGN_NAMES, SIGN_RULERS, PLANETS, DASHA_ORDER, DASHA_YEARS
 
 # Astrological lordship map: sign index -> ruling planet
 RASHI_LORDS = [
@@ -93,6 +93,21 @@ class TimelineEngine:
             all_periods, birth_dt, target_dt, house_lords, house_signs, grahas, yogas
         )
 
+        # 6. Key Landmark Life Milestones & Events Timeline
+        life_milestones = self._build_key_life_milestones(
+            all_periods, birth_dt, target_dt, house_lords, house_signs, grahas, yogas
+        )
+
+        # 7. Granular Pratyantardasha Forecast Timeline (Near-term Precision)
+        pratyantardashas = self._build_pratyantardasha_forecast(
+            dashas, birth_dt, target_dt, house_lords, grahas
+        )
+
+        # 8. Annual 10-Year Forward Forecast Roadmap (Year-by-Year Outlook)
+        annual_forecast = self._build_annual_forecast(
+            all_periods, birth_dt, target_dt, house_lords, grahas, yogas
+        )
+
         # Current active period deep-dive summary
         active_summary = self._synthesize_current_period(
             master_timeline, career_timeline, marriage_timeline, wealth_timeline, health_timeline
@@ -103,6 +118,9 @@ class TimelineEngine:
             "house_signs": house_signs,
             "active_period_summary": active_summary,
             "master_roadmap": master_timeline,
+            "life_milestones": life_milestones,
+            "annual_forecast": annual_forecast,
+            "pratyantardashas": pratyantardashas,
             "career": career_timeline,
             "marriage": marriage_timeline,
             "wealth": wealth_timeline,
@@ -748,3 +766,337 @@ class TimelineEngine:
             "wealth_recommendation": current_w.get("recommendation", ""),
             "health_recommendation": current_h.get("recommendation", ""),
         }
+
+    def _build_key_life_milestones(
+        self,
+        periods: List[Dict[str, Any]],
+        birth_dt: datetime,
+        target_dt: datetime,
+        house_lords: Dict[int, str],
+        house_signs: Dict[int, str],
+        grahas: Dict[str, Any],
+        yogas: Dict[str, Any]
+    ) -> List[Dict[str, Any]]:
+        """
+        Synthesizes a chronological sequence of landmark life milestone events
+        across education, career, marriage, wealth, relocation, spirituality, and health.
+        """
+        milestones = []
+        l10 = house_lords[10]
+        l7 = house_lords[7]
+        l2 = house_lords[2]
+        l11 = house_lords[11]
+        l9 = house_lords[9]
+        l4 = house_lords[4]
+        l5 = house_lords[5]
+        l1 = house_lords[1]
+        l12 = house_lords[12]
+        l6 = house_lords[6]
+        l8 = house_lords[8]
+
+        for p in periods:
+            md = p["md"]
+            ad = p["ad"]
+            active_lords = [md, ad]
+            age_s = p["age_start"]
+            age_e = p["age_end"]
+            start_yr = p["start_date"][:4]
+            end_yr = p["end_date"][:4]
+            year_range = f"{start_yr} – {end_yr}" if start_yr != end_yr else start_yr
+            is_active = (p["start_dt"] <= target_dt < p["end_dt"])
+            is_past = (p["end_dt"] <= target_dt)
+            is_near_term = (not is_past and not is_active and (p["start_dt"] - target_dt).days <= 365.2425 * 7)
+
+            if is_active:
+                status = "Current Running Period 🌟"
+                status_badge = "Active Now 🌟"
+            elif is_near_term:
+                status = "Upcoming Priority Window ⏳"
+                status_badge = "Upcoming Window ⏳"
+            elif is_past:
+                status = "Past Landmark Milestone ✓"
+                status_badge = "Completed Phase ✓"
+            else:
+                status = "Future Life Stage 🔮"
+                status_badge = "Future Milestone 🔮"
+
+            dignity_avg = (self._get_planet_dignity_score(md, grahas) + self._get_planet_dignity_score(ad, grahas)) / 2.0
+            candidate_events = []
+
+            # 1. Formative Education (Ages 10-24)
+            if 10 <= age_s <= 24:
+                if l5 in active_lords or l4 in active_lords or l9 in active_lords or "Mercury" in active_lords or "Jupiter" in active_lords:
+                    score = min(96, int(55 + dignity_avg * 35))
+                    candidate_events.append({
+                        "category": "Education & Intellect",
+                        "title": "Academic Excellence & Intellectual Foundation Milestone",
+                        "event_type": "Formative Academic Achievement",
+                        "score": score,
+                        "basis": f"5th/9th house intelligence rays triggered by {md} - {ad} dasha, stimulating Vidya Karaka Mercury/Jupiter.",
+                        "narrative": f"During Age {age_s} to {age_e} ({year_range}), scholarly focus and cognitive abilities experience acceleration. Favorable for qualifying exams, higher admissions, and building enduring foundational credentials.",
+                        "guidance": "Dedicate focused effort to technical and creative learning; honor teachers and mentors.",
+                        "remedy": "Recite Saraswati Vandana or chant 'Om Aim Saraswatyai Namah' 21 times at dawn."
+                    })
+
+            # 2. Career Elevation & Promotion (Ages 21-70)
+            if 21 <= age_s <= 70:
+                if l10 in active_lords or (l1 in active_lords and l9 in active_lords) or ("Sun" in active_lords and l10 in active_lords) or ("Saturn" in active_lords and l10 in active_lords):
+                    score = min(98, int(60 + dignity_avg * 35))
+                    title = "Major Career Elevation & Executive Recognition" if score >= 78 else "Professional Growth & Strategic Responsibility Milestone"
+                    candidate_events.append({
+                        "category": "Career & Status",
+                        "title": title,
+                        "event_type": "Professional Elevation",
+                        "score": score,
+                        "basis": f"Direct activation of 10th Lord ({l10}) and Lagna Lord ({l1}) infusing executive command and karmic recognition.",
+                        "narrative": f"A prime professional phase unfolding between {p['start_date']} and {p['end_date']} (Age {age_s} – {age_e}). Auspicious planetary transits foster leadership roles, prominent authority, and institutional standing.",
+                        "guidance": "Step up boldly for high-stakes leadership assignments; expand corporate networks and visibility.",
+                        "remedy": f"Offer water to the rising Sun daily (Surya Arghya) with Gayatri Mantra for enduring career radiance."
+                    })
+
+            # 3. Golden Marriage & Sacred Commitment Window (Ages 20-45)
+            if 20 <= age_s <= 45:
+                if l7 in active_lords or "Venus" in active_lords or (l2 in active_lords and "Jupiter" in active_lords):
+                    score = min(98, int(58 + dignity_avg * 35))
+                    candidate_events.append({
+                        "category": "Marriage & Relationships",
+                        "title": "Golden Vivaha (Marriage) & Soulmate Partnership Portal 💍",
+                        "event_type": "Sacred Relationship Commitment",
+                        "score": score,
+                        "basis": f"Activation of 7th Lord of marital destiny ({l7}) alongside Kalatra Karaka Venus/Jupiter.",
+                        "narrative": f"An exceptionally auspicious window between {p['start_date']} and {p['end_date']} (Age {age_s} – {age_e}) triggering marital union, engagement, or profound relationship consolidation. Mutual devotion and domestic harmony are highlighted.",
+                        "guidance": "Ideal time for matrimonial conversations, engagement ceremonies, and shared future planning.",
+                        "remedy": "Worship Goddess Lakshmi and Lord Vishnu together on Fridays; cultivate patient communication."
+                    })
+
+            # 4. Wealth Surge & Asset Accumulation (Ages 22+)
+            if age_s >= 22:
+                if (l2 in active_lords or l11 in active_lords) and (l9 in active_lords or "Jupiter" in active_lords or "Venus" in active_lords or l1 in active_lords):
+                    score = min(98, int(60 + dignity_avg * 35))
+                    candidate_events.append({
+                        "category": "Wealth & Assets",
+                        "title": "Major Dhana Yoga Surge & Wealth Accumulation Milestone 💰",
+                        "event_type": "Financial Expansion & Capital Growth",
+                        "score": score,
+                        "basis": f"2nd Lord of accumulated wealth ({l2}) and 11th Lord of gains ({l11}) energized in harmonious angle.",
+                        "narrative": f"Financial gates open substantially from {p['start_date']} to {p['end_date']}. Lucrative income streams, investment windfalls, and multi-fold asset growth manifest under benevolent planetary radiation.",
+                        "guidance": "Deploy surplus capital into enduring appreciating assets; establish diversified financial pillars.",
+                        "remedy": "Chant Sri Suktam on Fridays or donate yellow grains/pulses to a worthy educational cause."
+                    })
+
+            # 5. Property, Home & Real Estate Acquisition (Ages 25+)
+            if age_s >= 25:
+                if l4 in active_lords and ("Mars" in active_lords or "Venus" in active_lords or l1 in active_lords):
+                    score = min(96, int(56 + dignity_avg * 35))
+                    candidate_events.append({
+                        "category": "Wealth & Assets",
+                        "title": "Auspicious Real Estate, Home & Property Acquisition 🏡",
+                        "event_type": "Real Estate / Asset Milestone",
+                        "score": score,
+                        "basis": f"4th Lord of Sukha ({l4}) and Bhumi Karaka Mars aligning to foster immovable property ownership.",
+                        "narrative": f"Between {p['start_date']} and {p['end_date']}, strong planetary support emerges for purchasing residential real estate, upgrading living spaces, or acquiring luxury transport.",
+                        "guidance": "Conduct thorough legal due diligence on title deeds and finalize property investments with confidence.",
+                        "remedy": "Perform Vastu Puja or keep a sacred silver coin in the north-east corner of your residence."
+                    })
+
+            # 6. Foreign Relocation, International Breakthrough & Travel
+            if age_s >= 18:
+                if (l12 in active_lords or l9 in active_lords) and ("Rahu" in active_lords or l10 in active_lords or l1 in active_lords):
+                    score = min(95, int(54 + dignity_avg * 35))
+                    candidate_events.append({
+                        "category": "Travel & Relocation",
+                        "title": "Foreign Relocation, Cross-Border Breakthrough & Long-Distance Voyage ✈️",
+                        "event_type": "Global Expansion / Relocation",
+                        "score": score,
+                        "basis": f"12th Lord of foreign horizons ({l12}) and 9th Lord of long journeys activated under Rahu/Jupiter.",
+                        "narrative": f"A major gateway opens for overseas employment, foreign relocation, or high-impact international projects during {year_range} (Age {age_s} – {age_e}). Cultural broadening and cross-border gains follow.",
+                        "guidance": "Keep passports and international visas updated; embrace global cross-cultural opportunities.",
+                        "remedy": "Donate food to traveling pilgrims or support shelters on Thursday evenings."
+                    })
+
+            # 7. Spiritual Awakening & Dharmic Evolution (Ages 28+)
+            if age_s >= 28:
+                if (l9 in active_lords or l8 in active_lords) and ("Jupiter" in active_lords or "Ketu" in active_lords or l1 in active_lords):
+                    score = min(97, int(58 + dignity_avg * 35))
+                    candidate_events.append({
+                        "category": "Spiritual & Dharma",
+                        "title": "Deep Spiritual Awakening, Higher Wisdom & Dharmic Initiation 🕉️",
+                        "event_type": "Inner Evolution & Dharma Milestone",
+                        "score": score,
+                        "basis": f"9th house of Guru's grace and Moksha Karaka Ketu illuminating deep intuitive perception.",
+                        "narrative": f"Between {p['start_date']} and {p['end_date']}, profound philosophical insights, spiritual pilgrimages, and inner clarity transform your perspective. A mentor or spiritual guide offers vital direction.",
+                        "guidance": "Deepen meditation, study sacred philosophy, and practice regular acts of seva (selfless service).",
+                        "remedy": "Recite the Maha Mrityunjaya Mantra 108 times during Monday twilight hours."
+                    })
+
+            # 8. Health Vigilance & Balancing Alert
+            if l6 in active_lords or l8 in active_lords or ("Saturn" in active_lords and yogas.get("sade_sati", {}).get("is_sade_sati", False)):
+                score = max(38, int(68 - dignity_avg * 25))
+                candidate_events.append({
+                    "category": "Health & Vitality",
+                    "title": "Health & Vitality Balancing Alert — Preventive Care & Rejuvenation 🌿",
+                    "event_type": "Vitality & Wellness Balancing",
+                    "score": score,
+                    "basis": f"Influence of 6th/8th Rogakara houses signaling stress sensitivity and metabolic fluctuations.",
+                    "narrative": f"The phase from {p['start_date']} to {p['end_date']} advises mindful pacing. Guard against excessive fatigue, prioritize restorative sleep, and harmonize digestive fire (Agni).",
+                    "guidance": "Schedule regular comprehensive health check-ups; eliminate stimulants; follow an Ayurvedic seasonal regimen.",
+                    "remedy": "Perform Pranayama at dawn and donate warm clothing or sesame seeds on Saturdays."
+                })
+
+            # Select the top candidate event for this period
+            if candidate_events:
+                best_ev = max(candidate_events, key=lambda x: x["score"])
+                milestones.append({
+                    "milestone_id": f"MS_{p['start_date']}_{best_ev['category'][:3].upper()}",
+                    "title": best_ev["title"],
+                    "category": best_ev["category"],
+                    "event_type": best_ev["event_type"],
+                    "period": f"{p['start_date']} to {p['end_date']}",
+                    "start_date": p["start_date"],
+                    "end_date": p["end_date"],
+                    "year_range": year_range,
+                    "age_window": f"Age {age_s} – {age_e}",
+                    "age_start": age_s,
+                    "age_end": age_e,
+                    "dasha": p["dasha_name"],
+                    "status": status,
+                    "status_badge": status_badge,
+                    "is_current": is_active,
+                    "is_near_term": is_near_term,
+                    "is_past": is_past,
+                    "favorability_score": best_ev["score"],
+                    "astrological_basis": best_ev["basis"],
+                    "prediction_narrative": best_ev["narrative"],
+                    "actionable_guidance": best_ev["guidance"],
+                    "vedic_remedy": best_ev["remedy"]
+                })
+
+        return milestones
+
+    def _build_pratyantardasha_forecast(
+        self,
+        dashas: Dict[str, Any],
+        birth_dt: datetime,
+        target_dt: datetime,
+        house_lords: Dict[int, str],
+        grahas: Dict[str, Any]
+    ) -> List[Dict[str, Any]]:
+        """
+        Builds a granular month-by-month Pratyantardasha (sub-sub period) forecast
+        for the active running Antardasha.
+        """
+        active_pds = dashas.get("active_pratyantardashas", [])
+        active_md = dashas.get("active_dasha", {}).get("mahadasha", "Jupiter")
+        active_ad = dashas.get("active_dasha", {}).get("antardasha", "Moon")
+
+        # Fallback if empty
+        if not active_pds and "active_dasha" in dashas:
+            from core.dashas import VimshottariDashaEngine
+            ad_start = datetime.strptime(dashas["active_dasha"].get("start_date", "2024-01-01"), "%Y-%m-%d")
+            ad_end = datetime.strptime(dashas["active_dasha"].get("end_date", "2026-01-01"), "%Y-%m-%d")
+            active_pds = VimshottariDashaEngine.calculate_pratyantardashas(active_md, active_ad, ad_start, ad_end)
+
+        results = []
+        for pd in active_pds:
+            pd_planet = pd["planet"]
+            s_dt = datetime.strptime(pd["start_date"], "%Y-%m-%d")
+            e_dt = datetime.strptime(pd["end_date"], "%Y-%m-%d")
+            is_active = (s_dt <= target_dt < e_dt)
+
+            score_p = self._get_planet_dignity_score(pd_planet, grahas)
+            score = int(min(96, max(38, 48 + score_p * 45)))
+
+            themes = {
+                "Sun": "Authority, leadership initiative, government interactions, and heightened vitality.",
+                "Moon": "Emotional peace, maternal bonding, public popularity, and creative intuition.",
+                "Mars": "Physical stamina, decisive action, engineering/technical breakthroughs, competitive courage.",
+                "Mercury": "Commercial enterprise, communications, analytical contracts, data strategy.",
+                "Jupiter": "Wisdom expansion, auspicious blessings, mentorship, ethical investments.",
+                "Venus": "Artistic fulfillment, relationship joy, luxury acquisition, diplomatic harmony.",
+                "Saturn": "Systematic discipline, structural organization, enduring foundation building.",
+                "Rahu": "Unconventional innovation, foreign affairs, technological leaps, sudden insights.",
+                "Ketu": "Intuitive clarity, spiritual detachment, research depth, contemplative breakthroughs."
+            }
+
+            results.append({
+                "pratyantardasha": pd_planet,
+                "dasha_hierarchy": f"{active_md} - {active_ad} - {pd_planet}",
+                "start_date": pd["start_date"],
+                "end_date": pd["end_date"],
+                "duration_days": pd.get("duration_days", round((e_dt - s_dt).days, 1)),
+                "is_current": is_active,
+                "status_badge": "Active Running Window 🌟" if is_active else ("Upcoming" if s_dt > target_dt else "Completed"),
+                "favorability_score": score,
+                "focus_theme": themes.get(pd_planet, "Balanced energetic progress."),
+                "guidance": f"Harmonize with {pd_planet}'s vibration: prioritize quality execution and patience."
+            })
+
+        return results
+
+    def _build_annual_forecast(
+        self,
+        periods: List[Dict[str, Any]],
+        birth_dt: datetime,
+        target_dt: datetime,
+        house_lords: Dict[int, str],
+        grahas: Dict[str, Any],
+        yogas: Dict[str, Any]
+    ) -> List[Dict[str, Any]]:
+        """
+        Builds a comprehensive year-by-year chronological roadmap
+        covering the current year and the subsequent 10 years.
+        """
+        current_year = target_dt.year
+        annual = []
+
+        for yr in range(current_year - 1, current_year + 11):
+            mid_year = datetime(yr, 7, 1)
+            age = round((mid_year - birth_dt).days / 365.2425, 1)
+
+            matched_p = next((p for p in periods if p["start_dt"] <= mid_year < p["end_dt"]), periods[0] if periods else {})
+            md = matched_p.get("md", "Sun")
+            ad = matched_p.get("ad", "Moon")
+
+            md_score = self._get_planet_dignity_score(md, grahas)
+            ad_score = self._get_planet_dignity_score(ad, grahas)
+            score = int(min(96, max(38, 48 + (md_score + ad_score) * 24)))
+
+            is_cur_yr = (yr == current_year)
+
+            career_out = (
+                f"Under {md}-{ad}, professional focus is high. Favorable for consolidating authority and establishing strategic alliances."
+                if score >= 70 else
+                f"A consolidation and learning phase in career under {md}-{ad}. Prioritize steady execution over impulsive risks."
+            )
+            wealth_out = (
+                f"Income circulation is robust. Good opportunities for capital growth and asset diversification."
+                if score >= 68 else
+                f"Maintain budget discipline; safeguard reserves against unexpected discretionary outlays."
+            )
+            rel_out = (
+                f"Harmonious domestic ties and relationship support bring emotional stability."
+                if score >= 65 else
+                f"Practice empathetic listening; resolve domestic misunderstandings with calm patience."
+            )
+            health_out = (
+                f"Sound vitality and resilient energy levels support sustained productivity."
+                if score >= 65 else
+                f"Watch for fatigue and stress. Prioritize circadian sleep rhythms and a sattvic diet."
+            )
+
+            annual.append({
+                "year": yr,
+                "age_at_midyear": age,
+                "dasha": f"{md} - {ad}",
+                "is_current_year": is_cur_yr,
+                "overall_score": score,
+                "status_badge": "Current Year 🌟" if is_cur_yr else ("Upcoming Year" if yr > current_year else "Past Year"),
+                "primary_theme": f"Karmic expansion in {matched_p.get('dasha_name', '')} under {md} & {ad}",
+                "career_outlook": career_out,
+                "wealth_outlook": wealth_out,
+                "relationship_outlook": rel_out,
+                "health_outlook": health_out,
+                "key_recommendation": f"Focus conscious effort on {PLANETS.get(ad, {}).get('day', 'Wednesday')} auspicious activities."
+            })
+
+        return annual

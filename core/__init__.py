@@ -14,6 +14,7 @@ from core.yogas import YogaEngine
 from core.numerology import NumerologyEngine
 from core.geocoder import LocationResolver
 from core.visualizer import ChartVisualizer
+from core.report_exporter import ReportExporter
 
 __all__ = [
     "AstroAnalyzer",
@@ -27,6 +28,7 @@ __all__ = [
     "NumerologyEngine",
     "LocationResolver",
     "ChartVisualizer",
+    "ReportExporter",
 ]
 
 __version__ = "2.0.0"

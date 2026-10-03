@@ -262,11 +262,18 @@
       margin-bottom: 1rem;
     }
     .svg-wrapper {
+      width: 100%;
       max-width: 420px;
       margin: 0 auto;
       border-radius: 8px;
       overflow: hidden;
       box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+    }
+    .svg-wrapper svg {
+      width: 100% !important;
+      max-width: 100% !important;
+      height: auto !important;
+      display: block;
     }
 
     /* Panchang Cards */
@@ -469,6 +476,136 @@
       color: #000;
     }
 
+    .action-btn-group {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+
+    /* -------------------------------------------------------------
+       RESPONSIVE DESIGN: TABLET & MOBILE ENHANCEMENTS
+       ------------------------------------------------------------- */
+    @media (max-width: 992px) {
+      .container {
+        padding: 1.5rem 1rem 3rem;
+      }
+      header {
+        padding: 2rem 1rem 1.2rem;
+      }
+      header h1 {
+        font-size: 1.85rem;
+      }
+      .charts-container {
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 1.5rem;
+      }
+    }
+
+    @media (max-width: 768px) {
+      header {
+        padding: 1.25rem 0.75rem 1rem;
+      }
+      header h1 {
+        font-size: 1.45rem;
+        letter-spacing: 1px;
+      }
+      header p {
+        font-size: 0.82rem;
+        line-height: 1.4;
+      }
+      .container {
+        padding: 1rem 0.75rem 3rem;
+      }
+      .form-card {
+        padding: 1.25rem 1rem;
+        margin-bottom: 1.25rem;
+      }
+      .form-card h2 {
+        font-size: 1.2rem;
+        margin-bottom: 1rem;
+      }
+      .grid-form {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+      }
+      .chips {
+        gap: 0.35rem;
+      }
+      .chip {
+        padding: 0.3rem 0.65rem;
+        font-size: 0.75rem;
+      }
+      .btn-submit {
+        padding: 0.75rem 1rem;
+        font-size: 0.95rem;
+        margin-top: 1rem;
+      }
+      .overview-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.75rem;
+      }
+      .stat-card {
+        padding: 0.9rem 0.7rem;
+      }
+      .stat-card .val {
+        font-size: 1.15rem;
+      }
+      .charts-container {
+        grid-template-columns: 1fr;
+        gap: 1.25rem;
+      }
+      .panchang-grid {
+        grid-template-columns: 1fr;
+        gap: 0.75rem;
+      }
+      .dosha-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+      }
+      .tab-bar {
+        gap: 0.35rem;
+        padding-bottom: 0.5rem;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+      }
+      .tab-bar::-webkit-scrollbar {
+        display: none;
+      }
+      .tab-btn {
+        flex-shrink: 0;
+        padding: 0.5rem 0.85rem;
+        font-size: 0.82rem;
+      }
+      .action-btn-group {
+        width: 100%;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0.5rem;
+      }
+      .action-btn-group button {
+        width: 100%;
+        min-height: 42px;
+        padding: 0.5rem 0.5rem !important;
+        font-size: 0.82rem !important;
+      }
+      th, td {
+        padding: 0.65rem 0.65rem;
+        font-size: 0.82rem;
+      }
+    }
+
+    @media (max-width: 480px) {
+      header h1 {
+        font-size: 1.25rem;
+      }
+      .overview-grid {
+        grid-template-columns: 1fr;
+      }
+      .action-btn-group {
+        grid-template-columns: 1fr;
+      }
+    }
+
     /* Print Styles */
     @media print {
       body { background: #fff !important; color: #000 !important; }
@@ -492,6 +629,14 @@
   <header>
     <h1>ॐ VEDIC JYOTISH & NUMEROLOGY ॐ</h1>
     <p>High-Precision Vedic Astrological Ephemeris (NASA JPL DE421) & Sankhya Shastra</p>
+    <div style="margin-top: 0.6rem; display: flex; justify-content: center; gap: 0.5rem; flex-wrap: wrap;">
+      <span style="display: inline-flex; align-items: center; gap: 0.35rem; background: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.4); padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.8rem; font-weight: 600;">
+        📱 Mobile & Tablet Optimized
+      </span>
+      <span style="display: inline-flex; align-items: center; gap: 0.35rem; background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.4); padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.8rem; font-weight: 600;">
+        ● NASA JPL DE421 Ephemeris
+      </span>
+    </div>
   </header>
 
   <div class="container">
@@ -532,9 +677,14 @@
 
     <!-- Results Area -->
     <div id="results-area">
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem; flex-wrap: wrap; gap: 0.75rem;">
         <h2 id="reportTitle" style="font-family: 'Cinzel', serif; color: #fbbf24;">Horoscope & Numerology Analysis</h2>
-        <button class="btn-print" onclick="window.print()">🖨️ Print / Save PDF</button>
+        <div class="action-btn-group">
+          <button class="btn-print" onclick="window.print()" style="background: rgba(51, 65, 85, 0.8); color: #fff; border: 1px solid #475569; padding: 0.5rem 1rem; border-radius: 6px; font-weight: 600; cursor: pointer;">🖨️ Print / Save PDF</button>
+          <button onclick="downloadCurrentReport('html')" style="background: linear-gradient(135deg, #f59e0b, #d97706); color: #0f172a; border: none; padding: 0.5rem 1rem; border-radius: 6px; font-weight: 700; cursor: pointer;">🌐 Download HTML</button>
+          <button onclick="downloadCurrentReport('md')" style="background: linear-gradient(135deg, #0ea5e9, #0284c7); color: #fff; border: none; padding: 0.5rem 1rem; border-radius: 6px; font-weight: 700; cursor: pointer;">📝 Download Markdown</button>
+          <button onclick="downloadCurrentReport('json')" style="background: linear-gradient(135deg, #10b981, #059669); color: #fff; border: none; padding: 0.5rem 1rem; border-radius: 6px; font-weight: 700; cursor: pointer;">💾 Download JSON</button>
+        </div>
       </div>
 
       <!-- Quick Overview Cards -->
@@ -554,29 +704,84 @@
 
       <!-- Tab: Event Timelines -->
       <div id="tab-timelines" class="tab-content active">
-        <div class="guidance-box" style="border-left: 4px solid #f59e0b; margin-bottom: 1.5rem;">
-          <h4 id="activeTimelineHeader" style="color: #fbbf24;">Active Timeline Period</h4>
-          <p id="activeTimelineTheme" style="font-size: 1.1rem; color: #fff;"></p>
-          <div id="activeTimelineDomains" style="margin-top: 0.5rem; font-size: 0.9rem; color: #cbd5e1; line-height: 1.6;"></div>
+        <!-- Active Period Banner -->
+        <div class="guidance-box" style="border-left: 4px solid #10b981; margin-bottom: 1.5rem; background: rgba(16, 185, 129, 0.08);">
+          <h4 id="activeTimelineHeader" style="color: #34d399;">Active Running Dasha Window</h4>
+          <p id="activeTimelineTheme" style="font-size: 1.15rem; color: #fbbf24; font-weight: 600;"></p>
+          <div id="activeTimelineDomains" style="margin-top: 0.5rem; font-size: 0.92rem; color: #cbd5e1; line-height: 1.6;"></div>
         </div>
-        <div class="table-responsive">
-          <table>
-            <thead>
-              <tr>
-                <th>Dasha Period</th>
-                <th>Age Range</th>
-                <th>Dates</th>
-                <th>Status</th>
-                <th>Dominant Life Theme</th>
-                <th>Overall</th>
-                <th>Career</th>
-                <th>Marriage</th>
-                <th>Wealth</th>
-                <th>Health</th>
-              </tr>
-            </thead>
-            <tbody id="timelineTableBody"></tbody>
-          </table>
+
+        <!-- Major Predicted Life Milestones -->
+        <div style="margin-bottom: 2rem;">
+          <h3 style="font-family: 'Cinzel', serif; color: #fbbf24; margin-bottom: 0.5rem;">🎯 Major Predicted Life Milestones & Events</h3>
+          <p style="color: #94a3b8; font-size: 0.9rem; margin-bottom: 1rem;">Chronological milestones across career promotion, vivaha (marriage), property/wealth surge, and higher wisdom.</p>
+          <div id="milestonesContainer"></div>
+        </div>
+
+        <!-- Pratyantardasha Granular Calendar -->
+        <div style="margin-bottom: 2rem;">
+          <h3 style="font-family: 'Cinzel', serif; color: #38bdf8; margin-bottom: 0.5rem;">⚡ Month-by-Month Pratyantardasha (Sub-Sub Period) Forecast</h3>
+          <p style="color: #94a3b8; font-size: 0.9rem; margin-bottom: 0.75rem;">Granular sub-period timing for the currently active Antardasha window.</p>
+          <div class="table-responsive">
+            <table>
+              <thead>
+                <tr>
+                  <th>Dasha Level 3</th>
+                  <th>Period Dates</th>
+                  <th>Duration</th>
+                  <th>Status</th>
+                  <th>Favorability</th>
+                  <th>Focus Theme & Strategic Guidance</th>
+                </tr>
+              </thead>
+              <tbody id="pratyantardashaTableBody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- 10-Year Annual Forward Roadmap -->
+        <div style="margin-bottom: 2rem;">
+          <h3 style="font-family: 'Cinzel', serif; color: #34d399; margin-bottom: 0.5rem;">📅 10-Year Annual Forward Forecast Roadmap</h3>
+          <p style="color: #94a3b8; font-size: 0.9rem; margin-bottom: 0.75rem;">Year-by-year preview covering current period and the next decade.</p>
+          <div class="table-responsive">
+            <table>
+              <thead>
+                <tr>
+                  <th>Year & Age</th>
+                  <th>Dasha</th>
+                  <th>Score</th>
+                  <th>Status</th>
+                  <th>Primary Theme</th>
+                  <th>Strategic Recommendation</th>
+                </tr>
+              </thead>
+              <tbody id="annualForecastTableBody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Lifespan Dasha Master Roadmap -->
+        <div>
+          <h3 style="font-family: 'Cinzel', serif; color: #fbbf24; margin-bottom: 0.5rem;">🌟 Lifespan Dasha Master Roadmap</h3>
+          <div class="table-responsive">
+            <table>
+              <thead>
+                <tr>
+                  <th>Dasha Period</th>
+                  <th>Age Range</th>
+                  <th>Dates</th>
+                  <th>Status</th>
+                  <th>Dominant Life Theme</th>
+                  <th>Overall</th>
+                  <th>Career</th>
+                  <th>Marriage</th>
+                  <th>Wealth</th>
+                  <th>Health</th>
+                </tr>
+              </thead>
+              <tbody id="timelineTableBody"></tbody>
+            </table>
+          </div>
         </div>
       </div>
 
@@ -740,7 +945,26 @@
       }
     });
 
+    let currentReportData = null;
+
+    function downloadCurrentReport(fmt) {
+      if (!currentReportData) {
+        alert("Please generate a horoscope first.");
+        return;
+      }
+      const user = currentReportData.user_input || {};
+      const params = new URLSearchParams({
+        full_name: user.full_name || 'Arjun Sharma',
+        dob: user.date_of_birth || '1995-10-24',
+        tob: user.time_of_birth || '06:30',
+        pob: user.place_of_birth || 'New Delhi, India',
+        format: fmt
+      });
+      window.location.href = `/api/report/download?${params.toString()}`;
+    }
+
     function renderReport(data) {
+      currentReportData = data;
       document.getElementById('results-area').style.display = 'block';
       document.getElementById('reportTitle').innerText = `${data.user_input.full_name}'s Vedic Horoscope & Numerology`;
 
@@ -870,8 +1094,8 @@
       // Timelines Section
       if (data.timelines) {
         const act = data.timelines.active_period_summary || {};
-        document.getElementById('activeTimelineHeader').innerText = `Current Life Period: ${act.dasha} (${act.period}) | ${act.age}`;
-        document.getElementById('activeTimelineTheme').innerText = `Dominant Theme: ${act.dominant_theme}`;
+        document.getElementById('activeTimelineHeader').innerText = `Active Dasha: ${act.dasha} (${act.period}) | ${act.age}`;
+        document.getElementById('activeTimelineTheme').innerText = `🌟 Dominant Life Focus: ${act.dominant_theme}`;
         document.getElementById('activeTimelineDomains').innerHTML = `
           <div>💼 <strong>Career:</strong> ${act.career_status} — <em>${act.career_recommendation}</em></div>
           <div style="margin-top:0.3rem;">💍 <strong>Marriage & Relationships:</strong> ${act.marriage_status} — <em>${act.marriage_recommendation}</em></div>
@@ -879,6 +1103,71 @@
           <div style="margin-top:0.3rem;">🌿 <strong>Health & Vitality:</strong> ${act.health_status} — <em>${act.health_recommendation}</em></div>
         `;
 
+        // 1. Major Life Milestones
+        let msHtml = '';
+        for (const m of (data.timelines.life_milestones || [])) {
+          const badgeClass = m.is_current ? 'badge-green' : (m.favorability_score >= 80 ? 'badge-yellow' : 'badge-blue');
+          msHtml += `
+            <div style="background: rgba(15, 23, 42, 0.65); border: 1px solid ${m.is_current ? '#10b981' : 'rgba(245, 158, 11, 0.25)'}; border-radius: 10px; padding: 1rem 1.25rem; margin-bottom: 1rem;">
+              <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; margin-bottom: 0.5rem; flex-wrap: wrap;">
+                <div>
+                  <span style="font-size: 0.75rem; font-weight: 700; color: #38bdf8; text-transform: uppercase; letter-spacing: 1px;">${m.category} • ${m.event_type}</span>
+                  <h4 style="font-family: 'Cinzel', serif; color: #fbbf24; margin: 0.2rem 0; font-size: 1.15rem;">${m.title}</h4>
+                  <div style="font-size: 0.85rem; color: #cbd5e1; display: flex; gap: 1rem; flex-wrap: wrap;">
+                    <span>📅 <strong>${m.year_range}</strong> (${m.age_window})</span>
+                    <span>🪐 Dasha: <strong>${m.dasha}</strong></span>
+                    <span>⚡ Window: ${m.period}</span>
+                  </div>
+                </div>
+                <div style="text-align: right;">
+                  <span class="badge ${badgeClass}">${m.status_badge}</span>
+                  <div style="font-size: 1.3rem; font-weight: 800; color: #fbbf24; margin-top: 0.2rem;">${m.favorability_score}% <small style="font-size: 0.75rem; color: #94a3b8;">Favorability</small></div>
+                </div>
+              </div>
+              <div style="color: #cbd5e1; font-size: 0.92rem; line-height: 1.55;">
+                <p style="margin-bottom: 0.35rem;"><strong>Astrological Basis:</strong> ${m.astrological_basis}</p>
+                <p style="margin-bottom: 0.35rem; color: #f8fafc;"><strong>Predicted Event:</strong> ${m.prediction_narrative}</p>
+                <p style="margin-bottom: 0.35rem; color: #38bdf8;"><strong>Strategic Guidance:</strong> ${m.actionable_guidance}</p>
+                <p style="margin-bottom: 0; color: #fbbf24;"><strong>Vedic Remedy:</strong> ${m.vedic_remedy}</p>
+              </div>
+            </div>
+          `;
+        }
+        document.getElementById('milestonesContainer').innerHTML = msHtml || '<p style="color:#94a3b8;">No milestone data available.</p>';
+
+        // 2. Pratyantardashas Table
+        let pdRows = '';
+        for (const pd of (data.timelines.pratyantardashas || [])) {
+          pdRows += `
+            <tr style="${pd.is_current ? 'background: rgba(16, 185, 129, 0.15); font-weight: bold;' : ''}">
+              <td><strong style="color: ${pd.is_current ? '#34d399' : '#f8fafc'};">${pd.dasha_hierarchy}</strong></td>
+              <td>${pd.start_date} → ${pd.end_date}</td>
+              <td>${pd.duration_days} days</td>
+              <td><span class="badge ${pd.is_current ? 'badge-green' : 'badge-blue'}">${pd.status_badge}</span></td>
+              <td>${pd.favorability_score}%</td>
+              <td>${pd.focus_theme} <em style="color:#cbd5e1;">(${pd.guidance})</em></td>
+            </tr>
+          `;
+        }
+        document.getElementById('pratyantardashaTableBody').innerHTML = pdRows;
+
+        // 3. Annual Forecast Table
+        let afRows = '';
+        for (const af of (data.timelines.annual_forecast || [])) {
+          afRows += `
+            <tr style="${af.is_current_year ? 'background: rgba(245, 158, 11, 0.12); font-weight: bold;' : ''}">
+              <td><strong style="color: ${af.is_current_year ? '#fbbf24' : '#f8fafc'};">${af.year}</strong> (Age ${af.age_at_midyear})</td>
+              <td><code>${af.dasha}</code></td>
+              <td>${af.overall_score}%</td>
+              <td><span class="badge ${af.is_current_year ? 'badge-green' : 'badge-yellow'}">${af.status_badge}</span></td>
+              <td>${af.primary_theme}</td>
+              <td>${af.key_recommendation}</td>
+            </tr>
+          `;
+        }
+        document.getElementById('annualForecastTableBody').innerHTML = afRows;
+
+        // 4. Lifespan Dasha Table
         let tlRows = '';
         for (const item of (data.timelines.master_roadmap || [])) {
           tlRows += `

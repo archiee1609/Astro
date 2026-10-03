@@ -153,5 +153,151 @@ class TestVedicAstroEngine(unittest.TestCase):
         transits = svc.calculate_current_transits(self.analyzer.ephem_engine)
         self.assertEqual(len(transits["transits"]), 9)
 
+    def test_detailed_timeline_events(self):
+        """Validates that detailed timeline of events has milestones, PDs, and 10-year forecasts."""
+        result = self.analyzer.analyze(
+            full_name="Pooja Verma",
+            dob_str="1992-04-18",
+            tob_str="14:20",
+            pob_str="Mumbai, India"
+        )
+        tl = result["timelines"]
+        
+        # 1. Life Milestones
+        self.assertIn("life_milestones", tl)
+        self.assertIsInstance(tl["life_milestones"], list)
+        self.assertGreater(len(tl["life_milestones"]), 0)
+        first_m = tl["life_milestones"][0]
+        for key in ["title", "category", "period", "start_date", "end_date", "age_window", 
+                    "astrological_basis", "prediction_narrative", "actionable_guidance", "vedic_remedy"]:
+            self.assertIn(key, first_m, f"Missing key '{key}' in milestone")
+
+        # 2. Pratyantardashas
+        self.assertIn("pratyantardashas", tl)
+        self.assertIsInstance(tl["pratyantardashas"], list)
+        self.assertGreater(len(tl["pratyantardashas"]), 0)
+        first_pd = tl["pratyantardashas"][0]
+        for key in ["pratyantardasha", "dasha_hierarchy", "start_date", "end_date", "focus_theme", "guidance"]:
+            self.assertIn(key, first_pd, f"Missing key '{key}' in pratyantardasha")
+
+        # 3. 10-Year Annual Forecast
+        self.assertIn("annual_forecast", tl)
+        self.assertIsInstance(tl["annual_forecast"], list)
+        self.assertGreaterEqual(len(tl["annual_forecast"]), 10)
+        first_af = tl["annual_forecast"][0]
+        for key in ["year", "age_at_midyear", "dasha", "primary_theme", "career_outlook", "wealth_outlook", "key_recommendation"]:
+            self.assertIn(key, first_af, f"Missing key '{key}' in annual forecast")
+
+    def test_pratyantardasha_engine_divisions(self):
+        """Validates that VimshottariDashaEngine computes 9 continuous pratyantardasha sub-periods."""
+        start_dt = datetime(2024, 1, 1)
+        end_dt = datetime(2026, 1, 1)
+        pds = VimshottariDashaEngine.calculate_pratyantardashas("Jupiter", "Saturn", start_dt, end_dt)
+        self.assertEqual(len(pds), 9)
+        self.assertEqual(pds[0]["planet"], "Saturn")  # 1st PD starts with Antardasha lord
+        
+        # Continuity check
+        for i in range(len(pds) - 1):
+            self.assertEqual(pds[i]["end_date"], pds[i + 1]["start_date"], "Pratyantardasha dates must be strictly continuous")
+
+    def test_report_exporter_all_formats(self):
+        """Tests that ReportExporter successfully generates JSON, Markdown, and HTML reports."""
+        import tempfile
+        import os
+        from core.report_exporter import ReportExporter
+
+        result = self.analyzer.analyze(
+            full_name="Rohan Mehra",
+            dob_str="1988-07-12",
+            tob_str="09:15",
+            pob_str="Bangalore, India"
+        )
+
+        # JSON Export
+        json_str = ReportExporter.generate_json_report(result)
+        self.assertIsInstance(json_str, str)
+        self.assertIn("user_input", json_str)
+        self.assertIn("Rohan Mehra", json_str)
+
+        # Markdown Export
+        md_str = ReportExporter.generate_markdown_report(result)
+        self.assertIsInstance(md_str, str)
+        self.assertIn("# ॐ VEDIC JYOTISH & SANKHYA SHASTRA COMPREHENSIVE REPORT ॐ", md_str)
+        self.assertIn("## 1. Birth & Astronomical Coordinates", md_str)
+        self.assertIn("## 6. Vimshottari Dasha Timeline", md_str)
+        self.assertIn("## 7. Detailed Timeline of Events & Life Milestones", md_str)
+        self.assertIn("## 10. Personalized Vedic Guidance & Auspicious Remedies", md_str)
+
+        # HTML Export (Standalone, Print-to-PDF ready)
+        html_str = ReportExporter.generate_html_report(result)
+        self.assertIsInstance(html_str, str)
+        self.assertIn("<!DOCTYPE html>", html_str)
+        self.assertIn("<title>Vedic Jyotish & Numerology Complete Report - Rohan Mehra</title>", html_str)
+        self.assertIn("<svg", html_str)
+        self.assertIn("@media print", html_str)
+
+        # File export test
+        with tempfile.TemporaryDirectory() as tmpdir:
+            h_path = os.path.join(tmpdir, "test.html")
+            m_path = os.path.join(tmpdir, "test.md")
+            j_path = os.path.join(tmpdir, "test.json")
+
+            ReportExporter.export_to_file(result, h_path, "html")
+            ReportExporter.export_to_file(result, m_path, "markdown")
+            ReportExporter.export_to_file(result, j_path, "json")
+
+            self.assertTrue(os.path.exists(h_path) and os.path.getsize(h_path) > 1000)
+            self.assertTrue(os.path.exists(m_path) and os.path.getsize(m_path) > 1000)
+            self.assertTrue(os.path.exists(j_path) and os.path.getsize(j_path) > 1000)
+
+    def test_fastapi_report_downloads(self):
+        """Tests FastAPI /api/report/download GET and POST endpoints for html, markdown, and json."""
+        from fastapi.testclient import TestClient
+        from ui.web.app import app
+
+        client = TestClient(app)
+
+        params = {
+            "full_name": "Kavita Rao",
+            "dob": "1993-11-05",
+            "tob": "18:45",
+            "pob": "Hyderabad, India"
+        }
+
+        # 1. GET HTML
+        resp_html = client.get("/api/report/download", params={**params, "format": "html"})
+        self.assertEqual(resp_html.status_code, 200)
+        self.assertIn("text/html", resp_html.headers.get("content-type", ""))
+        self.assertIn("attachment", resp_html.headers.get("content-disposition", ""))
+        self.assertIn("<!DOCTYPE html>", resp_html.text)
+
+        # 2. GET Markdown
+        resp_md = client.get("/api/report/download", params={**params, "format": "markdown"})
+        self.assertEqual(resp_md.status_code, 200)
+        self.assertIn("text/markdown", resp_md.headers.get("content-type", ""))
+        self.assertIn("attachment", resp_md.headers.get("content-disposition", ""))
+        self.assertIn("# ॐ VEDIC JYOTISH", resp_md.text)
+
+        # 3. GET JSON
+        resp_json = client.get("/api/report/download", params={**params, "format": "json"})
+        self.assertEqual(resp_json.status_code, 200)
+        self.assertIn("application/json", resp_json.headers.get("content-type", ""))
+        self.assertIn("attachment", resp_json.headers.get("content-disposition", ""))
+        data = resp_json.json()
+        self.assertEqual(data["user_input"]["full_name"], "Kavita Rao")
+
+        # 4. POST HTML Download
+        post_resp = client.post("/api/report/download", json={
+            "user_input": {
+                "full_name": "Kavita Rao",
+                "dob": "1993-11-05",
+                "tob": "18:45",
+                "pob": "Hyderabad, India"
+            },
+            "format": "html"
+        })
+        self.assertEqual(post_resp.status_code, 200)
+        self.assertIn("text/html", post_resp.headers.get("content-type", ""))
+
 if __name__ == "__main__":
     unittest.main()

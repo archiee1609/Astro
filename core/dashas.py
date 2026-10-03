@@ -75,7 +75,7 @@ class VimshottariDashaEngine:
             if (current_start - birth_dt).days > 110 * DAYS_PER_YEAR:
                 break
 
-        # Identify currently active Mahadasha and Antardasha as of target_dt
+        # Identify currently active Mahadasha, Antardasha, and Pratyantardasha as of target_dt
         active_md = None
         active_ad = None
 
@@ -97,6 +97,24 @@ class VimshottariDashaEngine:
             active_md = mahadashas[-1]
             active_ad = active_md["antardashas"][-1]
 
+        # Calculate Pratyantardashas for the active Antardasha
+        active_pd = None
+        active_pratyantardashas: List[Dict[str, Any]] = []
+        if active_md and active_ad:
+            ad_s_dt = datetime.strptime(active_ad["start_date"], "%Y-%m-%d")
+            ad_e_dt = datetime.strptime(active_ad["end_date"], "%Y-%m-%d")
+            active_pratyantardashas = VimshottariDashaEngine.calculate_pratyantardashas(
+                active_md["planet"], active_ad["planet"], ad_s_dt, ad_e_dt
+            )
+            for pd in active_pratyantardashas:
+                p_s = datetime.strptime(pd["start_date"], "%Y-%m-%d")
+                p_e = datetime.strptime(pd["end_date"], "%Y-%m-%d")
+                if p_s <= target_dt < p_e:
+                    active_pd = pd
+                    break
+            if not active_pd and active_pratyantardashas:
+                active_pd = active_pratyantardashas[-1]
+
         # Balance breakdown in years, months, days
         rounded_bal = round(balance_years, 5)
         bal_y = int(rounded_bal)
@@ -117,12 +135,50 @@ class VimshottariDashaEngine:
             "active_dasha": {
                 "mahadasha": active_md["planet"] if active_md else "N/A",
                 "antardasha": active_ad["planet"] if active_ad else "N/A",
+                "pratyantardasha": active_pd["planet"] if active_pd else "N/A",
                 "start_date": active_ad["start_date"] if active_ad else "N/A",
                 "end_date": active_ad["end_date"] if active_ad else "N/A",
-                "formatted": f"{active_md['planet']} - {active_ad['planet']}" if active_md and active_ad else "N/A"
+                "pd_start_date": active_pd["start_date"] if active_pd else "N/A",
+                "pd_end_date": active_pd["end_date"] if active_pd else "N/A",
+                "formatted": f"{active_md['planet']} - {active_ad['planet']}" if active_md and active_ad else "N/A",
+                "full_formatted": f"{active_md['planet']} - {active_ad['planet']} - {active_pd['planet']}" if active_md and active_ad and active_pd else "N/A"
             },
+            "active_pratyantardashas": active_pratyantardashas,
             "timeline": mahadashas
         }
+
+    @staticmethod
+    def calculate_pratyantardashas(
+        md_planet: str, ad_planet: str, ad_start: datetime, ad_end: datetime
+    ) -> List[Dict[str, Any]]:
+        """
+        Calculates the 9 Pratyantardashas (sub-sub periods) within an Antardasha.
+        Sequence begins with ad_planet.
+        Duration of PD = (MD_years * AD_years * PD_years / (120 * 120)) * 365.2425 days.
+        """
+        start_idx = DASHA_ORDER.index(ad_planet)
+        total_ad_days = max(1.0, (ad_end - ad_start).total_seconds() / 86400.0)
+
+        pratyantardashas = []
+        curr_date = ad_start
+
+        for k in range(len(DASHA_ORDER)):
+            pd_planet = DASHA_ORDER[(start_idx + k) % len(DASHA_ORDER)]
+            pd_years = DASHA_YEARS[pd_planet]
+            pd_ratio = pd_years / 120.0
+            pd_duration_days = total_ad_days * pd_ratio
+            pd_end = curr_date + timedelta(days=pd_duration_days)
+
+            pratyantardashas.append({
+                "planet": pd_planet,
+                "dasha_code": f"{md_planet} - {ad_planet} - {pd_planet}",
+                "start_date": curr_date.strftime("%Y-%m-%d"),
+                "end_date": pd_end.strftime("%Y-%m-%d"),
+                "duration_days": round(pd_duration_days, 1)
+            })
+            curr_date = pd_end
+
+        return pratyantardashas
 
     @staticmethod
     def _calculate_antardashas(

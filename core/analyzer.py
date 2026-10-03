@@ -37,7 +37,11 @@ class AstroAnalyzer:
 
         # Date parsing
         parsed_date = None
-        for fmt in ("%Y-%m-%d", "%d-%m-%Y", "%d/%m/%Y", "%Y/%m/%d", "%B %d, %Y", "%d %b %Y"):
+        for fmt in (
+            "%Y-%m-%d", "%d-%m-%Y", "%d/%m/%Y", "%Y/%m/%d",
+            "%B %d, %Y", "%d %b %Y", "%d %B %Y", "%B %d %Y",
+            "%m/%d/%Y", "%m-%d-%Y", "%d.%m.%Y", "%Y.%m.%d", "%b %d, %Y"
+        ):
             try:
                 parsed_date = datetime.strptime(dob_clean, fmt).date()
                 break
@@ -49,7 +53,7 @@ class AstroAnalyzer:
 
         # Time parsing
         parsed_time = None
-        for fmt in ("%H:%M", "%H:%M:%S", "%I:%M %p", "%I:%M:%S %p", "%I %p"):
+        for fmt in ("%H:%M", "%H:%M:%S", "%I:%M %p", "%I:%M:%S %p", "%I %p", "%I:%M%p", "%I:%M:%S%p"):
             try:
                 parsed_time = datetime.strptime(tob_clean, fmt).time()
                 break

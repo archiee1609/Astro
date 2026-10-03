@@ -4,19 +4,20 @@ ui/web/app.py - FastAPI Web Server for Vedic Astrology and Numerology
 
 import os
 from datetime import datetime
-from typing import Optional
+from typing import Optional, Dict, Any
 from fastapi import FastAPI, Request, Form, HTTPException
-from fastapi.responses import HTMLResponse, JSONResponse
+from fastapi.responses import HTMLResponse, JSONResponse, Response, PlainTextResponse
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
 from core.analyzer import AstroAnalyzer
+from core.report_exporter import ReportExporter
 
 app = FastAPI(
     title="Vedic Astrology & Numerology Application",
     description="High precision Vedic Jyotish & Sankhya Shastra calculations",
-    version="1.0.0"
+    version="2.0.0"
 )
 
 base_dir = os.path.dirname(os.path.abspath(__file__))
@@ -55,6 +56,76 @@ async def analyze_api(data: AnalyzeRequest):
         return JSONResponse(content=report)
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
+
+@app.get("/api/report/download")
+async def download_report_get(
+    full_name: str = "Arjun Sharma",
+    dob: str = "1995-10-24",
+    tob: str = "06:30",
+    pob: str = "New Delhi, India",
+    format: str = "html"
+):
+    """Downloads the complete astrological report in HTML, Markdown, or JSON format."""
+    try:
+        report = analyzer.analyze(full_name=full_name, dob_str=dob, tob_str=tob, pob_str=pob)
+        clean_name = full_name.replace(" ", "_").lower()
+        fmt = format.lower().strip()
+
+        if fmt in ["html", "pdf"]:
+            content = ReportExporter.generate_html_report(report)
+            return Response(
+                content=content,
+                media_type="text/html",
+                headers={"Content-Disposition": f'attachment; filename="{clean_name}_complete_report.html"'}
+            )
+        elif fmt in ["md", "markdown"]:
+            content = ReportExporter.generate_markdown_report(report)
+            return Response(
+                content=content,
+                media_type="text/markdown",
+                headers={"Content-Disposition": f'attachment; filename="{clean_name}_complete_report.md"'}
+            )
+        else:
+            content = ReportExporter.generate_json_report(report)
+            return Response(
+                content=content,
+                media_type="application/json",
+                headers={"Content-Disposition": f'attachment; filename="{clean_name}_complete_report.json"'}
+            )
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+class DownloadReportRequest(BaseModel):
+    full_name: Optional[str] = None
+    date_of_birth: Optional[str] = None
+    time_of_birth: Optional[str] = None
+    place_of_birth: Optional[str] = None
+    dob: Optional[str] = None
+    tob: Optional[str] = None
+    pob: Optional[str] = None
+    format: Optional[str] = "html"
+    user_input: Optional[Dict[str, Any]] = None
+
+@app.post("/api/report/download")
+async def download_report_post(req: DownloadReportRequest, format: Optional[str] = None):
+    """Downloads the complete report via POST request with flexible input formatting."""
+    u = req.user_input or {}
+    full_name = req.full_name or u.get("full_name", "Report")
+    dob = req.date_of_birth or req.dob or u.get("date_of_birth") or u.get("dob")
+    tob = req.time_of_birth or req.tob or u.get("time_of_birth") or u.get("tob")
+    pob = req.place_of_birth or req.pob or u.get("place_of_birth") or u.get("pob")
+    fmt = format or req.format or "html"
+
+    if not (dob and tob and pob):
+        raise HTTPException(status_code=400, detail="Missing required birth fields (date_of_birth, time_of_birth, place_of_birth).")
+
+    return await download_report_get(
+        full_name=full_name,
+        dob=dob,
+        tob=tob,
+        pob=pob,
+        format=fmt
+    )
 
 @app.get("/api/quick-sample")
 async def quick_sample():

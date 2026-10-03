@@ -18,13 +18,15 @@ if PROJECT_ROOT not in sys.path:
 from core.analyzer import AstroAnalyzer
 from core.internet_data import InternetDataService
 from core.constants import PLANETS, SIGNS, NAKSHATRAS
+from core.report_exporter import ReportExporter
 
+# Page Configuration
 # Page Configuration
 st.set_page_config(
     page_title="ॐ Vedic Jyotish & Sacred Timelines",
     page_icon="🕉️",
     layout="wide",
-    initial_sidebar_state="expanded"
+    initial_sidebar_state="auto"
 )
 
 # Astrological Glyphs & Constants
@@ -38,7 +40,7 @@ SIGN_GLYPHS = {
     "Sagittarius": "♐", "Capricorn": "♑", "Aquarius": "♒", "Pisces": "♓"
 }
 
-# Deep Astrological Custom CSS
+# Deep Astrological Custom CSS with Full Mobile & Tablet Responsiveness
 st.markdown("""
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700;800;900&family=Marcellus&family=Inter:wght@300;400;500;600;700&display=swap');
@@ -228,8 +230,146 @@ st.markdown("""
         background: linear-gradient(180deg, #0e1222 0%, #080a14 100%) !important;
         border-right: 1px solid rgba(245, 158, 11, 0.25);
     }
+
+    /* -------------------------------------------------------------
+       RESPONSIVE DESIGN: TABLET & MOBILE ENHANCEMENTS
+       ------------------------------------------------------------- */
+    @media (max-width: 992px) {
+        .astro-header {
+            padding: 1.5rem 1rem 1.2rem;
+            margin-bottom: 1.5rem;
+        }
+        .astro-header h1 {
+            font-size: 1.85rem;
+            letter-spacing: 1.5px;
+        }
+        .astro-header p {
+            font-size: 0.9rem;
+        }
+        .cosmic-card {
+            padding: 1rem 1.2rem;
+        }
+    }
+
+    @media (max-width: 768px) {
+        /* Mobile & Small Tablet (Portrait) */
+        .astro-header {
+            padding: 1.2rem 0.75rem 1rem;
+            border-radius: 12px;
+            margin-bottom: 1rem;
+        }
+        .astro-header::before {
+            letter-spacing: 4px;
+            font-size: 0.75rem;
+        }
+        .astro-header h1 {
+            font-size: 1.45rem;
+            letter-spacing: 1px;
+            margin: 0.1rem 0;
+        }
+        .astro-header p {
+            font-size: 0.82rem;
+            line-height: 1.4;
+            margin-bottom: 0.5rem;
+        }
+        .astro-badge {
+            font-size: 0.72rem;
+            padding: 0.25rem 0.6rem;
+            margin: 0.15rem 0.2rem;
+        }
+
+        /* Responsive Metric Cards & Columns wrap */
+        div[data-testid="stHorizontalBlock"] {
+            flex-wrap: wrap !important;
+            gap: 0.6rem !important;
+        }
+        div[data-testid="stHorizontalBlock"] > div[data-testid="column"] {
+            min-width: 140px !important;
+            flex: 1 1 calc(50% - 0.6rem) !important;
+        }
+
+        .metric-tile {
+            padding: 0.75rem 0.5rem;
+        }
+        .metric-tile-title {
+            font-size: 0.7rem;
+        }
+        .metric-tile-value {
+            font-size: 1.25rem;
+        }
+        .metric-tile-sub {
+            font-size: 0.72rem;
+        }
+
+        .active-dasha-hero {
+            padding: 1rem 1.1rem;
+            border-radius: 10px;
+        }
+        .active-dasha-hero h3 {
+            font-size: 1.1rem;
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        /* Tabs swipeable horizontally on mobile */
+        .stTabs [data-baseweb="tab-list"] {
+            overflow-x: auto !important;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: none;
+            flex-wrap: nowrap !important;
+            white-space: nowrap !important;
+            padding-bottom: 6px !important;
+            gap: 4px !important;
+        }
+        .stTabs [data-baseweb="tab-list"]::-webkit-scrollbar {
+            display: none;
+        }
+        .stTabs [data-baseweb="tab"] {
+            flex-shrink: 0 !important;
+            font-size: 0.82rem !important;
+            padding: 6px 12px !important;
+        }
+
+        /* Touch-friendly buttons */
+        .stButton button, .stDownloadButton button {
+            min-height: 44px !important;
+            padding: 0.5rem 0.8rem !important;
+            font-size: 0.9rem !important;
+        }
+    }
+
+    @media (max-width: 480px) {
+        /* Extra-compact Smartphones */
+        .astro-header h1 {
+            font-size: 1.25rem;
+            letter-spacing: 0.5px;
+        }
+        div[data-testid="stHorizontalBlock"] > div[data-testid="column"] {
+            min-width: 100% !important;
+            flex: 1 1 100% !important;
+        }
+        .chart-frame {
+            padding: 0.4rem;
+        }
+        .cosmic-card {
+            padding: 0.85rem 1rem;
+        }
+    }
 </style>
 """, unsafe_allow_html=True)
+
+# Helper function to discover LAN IP for Mobile/Tablet access
+def get_lan_ip() -> str:
+    import socket
+    try:
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        s.settimeout(0.5)
+        s.connect(('8.8.8.8', 1))
+        ip = s.getsockname()[0]
+        s.close()
+        return ip
+    except Exception:
+        return "127.0.0.1"
 
 # Initialize engines
 @st.cache_resource
@@ -241,14 +381,15 @@ internet_svc = InternetDataService()
 
 def render_svg_kundali(svg_code: str, height: int = 425):
     """
-    Renders SVG vector Kundali inside a seamless iframe using st.components.v1.html,
-    guaranteeing 100% vector fidelity without markdown parser interference.
+    Renders SVG vector Kundali inside a seamless responsive iframe,
+    guaranteeing 100% vector fidelity across desktop, tablet, and mobile.
     """
     clean_svg = svg_code.strip()
     html_frame = f"""<!DOCTYPE html>
 <html>
 <head>
 <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <style>
     * {{ box-sizing: border-box; margin: 0; padding: 0; }}
     body {{
@@ -258,6 +399,7 @@ def render_svg_kundali(svg_code: str, height: int = 425):
         display: flex;
         justify-content: center;
         align-items: center;
+        width: 100%;
         height: 100%;
         overflow: hidden;
     }}
@@ -267,14 +409,21 @@ def render_svg_kundali(svg_code: str, height: int = 425):
         display: flex;
         justify-content: center;
         align-items: center;
+        padding: 4px;
     }}
     svg {{
         width: 100%;
+        max-width: 100%;
         height: auto;
         max-height: 395px;
         display: block;
         border-radius: 12px;
         box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+    }}
+    @media (max-width: 480px) {{
+        .kundali-wrapper {{
+            max-width: 295px;
+        }}
     }}
 </style>
 </head>
@@ -345,7 +494,20 @@ with st.sidebar:
             st.caption(f"Lat: {loc['latitude']:.4f}° | Lon: {loc['longitude']:.4f}° | Elevation: {loc.get('elevation_m', 0.0):.1f}m | Timezone: {loc['timezone']}")
 
     # Main Action Button
-    calc_pressed = st.button("🔮 Reveal Kundli & Timelines", type="primary", use_container_width=True)
+    calc_pressed = st.button("🔮 Reveal Kundli & Timelines", type="primary", width="stretch")
+
+    # Mobile & Tablet Access Helper
+    lan_ip = get_lan_ip()
+    with st.expander("📱 Mobile & Tablet Access", expanded=False):
+        st.markdown(f"""
+        <div style="font-size: 0.8rem; color: #cbd5e1; line-height: 1.5;">
+            To open this app on your <strong>Smartphone</strong> or <strong>Tablet</strong> connected to this Wi-Fi / Local Network:
+            <div style="background: rgba(15, 23, 42, 0.95); padding: 0.5rem; border-radius: 6px; margin: 0.4rem 0; border: 1px solid rgba(245, 158, 11, 0.5);">
+                <code style="color: #fbbf24; font-size: 0.85rem; word-break: break-all;">http://{lan_ip}:8501</code>
+            </div>
+            Open Chrome, Safari, or Edge on your mobile device and navigate to the address above.
+        </div>
+        """, unsafe_allow_html=True)
 
     st.markdown("---")
     conn_status = internet_svc.get_service_status()
@@ -453,6 +615,30 @@ if report:
         </div>
         """, unsafe_allow_html=True)
 
+    # Pre-generate download reports
+    html_data = ReportExporter.generate_html_report(report)
+    md_data = ReportExporter.generate_markdown_report(report)
+    json_data = ReportExporter.generate_json_report(report)
+    fname_clean = full_name.replace(' ', '_').lower()
+
+    # Quick Action Download Banner
+    st.markdown("""
+    <div style="background: rgba(30, 41, 59, 0.7); border: 1px solid rgba(245, 158, 11, 0.35); border-radius: 12px; padding: 0.85rem 1.25rem; margin-top: 1rem; margin-bottom: 1.25rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem;">
+        <div>
+            <span style="font-family: 'Cinzel', serif; color: #fbbf24; font-weight: 700; font-size: 1.05rem;">📥 Complete Astrological Report Ready</span>
+            <span style="color: #cbd5e1; font-size: 0.85rem; margin-left: 0.5rem;">Download comprehensive report with Kundli SVGs, life milestones & detailed timelines</span>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+    q_c1, q_c2, q_c3 = st.columns(3)
+    with q_c1:
+        st.download_button("🌐 Download Complete Report (HTML / PDF)", html_data, f"{fname_clean}_complete_report.html", "text/html", width="stretch")
+    with q_c2:
+        st.download_button("📝 Download Complete Report (Markdown)", md_data, f"{fname_clean}_complete_report.md", "text/markdown", width="stretch")
+    with q_c3:
+        st.download_button("💾 Download Complete Report (JSON)", json_data, f"{fname_clean}_complete_report.json", "application/json", width="stretch")
+
     st.markdown("<br>", unsafe_allow_html=True)
 
     # -------------------------------------------------------------
@@ -516,14 +702,117 @@ if report:
         </div>
         """, unsafe_allow_html=True)
 
-        # Subtabs for individual pillars
-        sub_roadmap, sub_career, sub_marriage, sub_wealth, sub_health = st.tabs([
-            "🌟 Master Life Roadmap",
-            "💼 Career & Karma Timeline",
-            "💍 Marriage & Relationships Timeline",
-            "💰 Wealth & Prosperity Timeline",
-            "🌿 Health & Vitality Timeline"
+        # Subtabs for individual pillars and rich timelines
+        sub_milestones, sub_pratyantardasha, sub_annual, sub_roadmap, sub_career, sub_marriage, sub_wealth, sub_health = st.tabs([
+            "🎯 Major Predicted Life Milestones",
+            "⚡ Month-by-Month Pratyantardasha Forecast",
+            "📅 10-Year Annual Forward Roadmap",
+            "🌟 Lifespan Master Roadmap",
+            "💼 Career & Karma Trajectory",
+            "💍 Marriage & Relationships Trajectory",
+            "💰 Wealth & Prosperity Trajectory",
+            "🌿 Health & Vitality Roadmap"
         ])
+
+        # 0. Major Predicted Life Milestones
+        with sub_milestones:
+            st.markdown("#### 🎯 Chronological Landmark Life Milestones & Predicted Events")
+            st.markdown("<p style='color: #94a3b8; font-size: 0.9rem;'>Major predicted milestones synthesized across career elevation, marriage windows, wealth surges, property acquisition, higher learning, and spiritual evolution.</p>", unsafe_allow_html=True)
+            milestones = timelines.get("life_milestones", [])
+            if milestones:
+                f_col1, f_col2 = st.columns([1, 1])
+                with f_col1:
+                    cat_filter = st.selectbox("Filter by Category", ["All Categories", "Career & Status", "Marriage & Relationships", "Wealth & Assets", "Education & Intellect", "Travel & Relocation", "Spiritual & Dharma", "Health & Vitality"])
+                with f_col2:
+                    time_filter = st.selectbox("Filter by Horizon", ["All Life Stages", "Current & Upcoming Priority Windows", "Past Landmark Milestones", "Future Life Stages"])
+
+                filtered_ms = []
+                for m in milestones:
+                    if cat_filter != "All Categories" and m.get("category") != cat_filter:
+                        continue
+                    if time_filter == "Current & Upcoming Priority Windows" and not (m.get("is_current") or m.get("is_near_term")):
+                        continue
+                    if time_filter == "Past Landmark Milestones" and not m.get("is_past"):
+                        continue
+                    if time_filter == "Future Life Stages" and (m.get("is_past") or m.get("is_current")):
+                        continue
+                    filtered_ms.append(m)
+
+                st.caption(f"Showing {len(filtered_ms)} of {len(milestones)} landmark milestones")
+
+                for m in filtered_ms:
+                    is_c = m.get("is_current")
+                    b_color = "#10b981" if is_c else ("#f59e0b" if m.get("favorability_score", 0) >= 80 else "#38bdf8")
+                    card_border = f"border: 1.5px solid {b_color};"
+                    card_bg = "background: rgba(16, 185, 129, 0.08);" if is_c else "background: rgba(18, 24, 43, 0.75);"
+
+                    st.markdown(f"""
+                    <div style="{card_bg} {card_border} border-radius: 12px; padding: 1.2rem 1.4rem; margin-bottom: 1rem; box-shadow: 0 4px 15px rgba(0,0,0,0.3);">
+                        <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; margin-bottom: 0.5rem;">
+                            <div>
+                                <span style="font-size: 0.75rem; font-weight: 700; color: #38bdf8; text-transform: uppercase; letter-spacing: 1px;">{m.get('category')} • {m.get('event_type')}</span>
+                                <h4 style="font-family: 'Cinzel', serif; color: #fbbf24; margin: 0.2rem 0; font-size: 1.15rem;">{m.get('title')}</h4>
+                                <div style="font-size: 0.85rem; color: #cbd5e1; display: flex; gap: 1rem; flex-wrap: wrap;">
+                                    <span>📅 <strong>{m.get('year_range')}</strong> ({m.get('age_window')})</span>
+                                    <span>🪐 Dasha: <strong>{m.get('dasha')}</strong></span>
+                                    <span>⚡ Window: {m.get('period')}</span>
+                                </div>
+                            </div>
+                            <div style="text-align: right; min-width: 140px;">
+                                <span class="astro-badge astro-badge-gold">{m.get('status_badge')}</span>
+                                <div style="font-size: 1.35rem; font-weight: 800; color: #fbbf24; margin-top: 0.2rem;">{m.get('favorability_score')}% <span style="font-size: 0.75rem; color: #94a3b8;">Favorability</span></div>
+                            </div>
+                        </div>
+                        <div style="color: #cbd5e1; font-size: 0.92rem; line-height: 1.6; margin-top: 0.6rem;">
+                            <p style="margin-bottom: 0.4rem;"><strong>Astrological Basis:</strong> {m.get('astrological_basis')}</p>
+                            <p style="margin-bottom: 0.4rem; color: #f8fafc;"><strong>Predicted Event:</strong> {m.get('prediction_narrative')}</p>
+                            <p style="margin-bottom: 0.4rem; color: #38bdf8;"><strong>Strategic Guidance:</strong> {m.get('actionable_guidance')}</p>
+                            <p style="margin-bottom: 0; color: #fbbf24;"><strong>Vedic Remedy:</strong> {m.get('vedic_remedy')}</p>
+                        </div>
+                    </div>
+                    """, unsafe_allow_html=True)
+            else:
+                st.info("Milestones data being compiled for this chart.")
+
+        # 0.1 Pratyantardasha Granular Forecast
+        with sub_pratyantardasha:
+            st.markdown("#### ⚡ Month-by-Month Granular Pratyantardasha (Sub-Sub Period) Forecast")
+            st.markdown(f"<p style='color: #cbd5e1; font-size: 0.92rem;'>Detailed sub-sub periods within running Mahadasha <strong>{dashas.get('active_dasha', {}).get('mahadasha')}</strong> and Antardasha <strong>{dashas.get('active_dasha', {}).get('antardasha')}</strong>.</p>", unsafe_allow_html=True)
+            pds = timelines.get("pratyantardashas", [])
+            if pds:
+                pd_table_rows = []
+                for pd in pds:
+                    pd_table_rows.append({
+                        "Dasha Level 3": pd.get("dasha_hierarchy"),
+                        "Dates": f"{pd.get('start_date')} → {pd.get('end_date')}",
+                        "Duration": f"{pd.get('duration_days')} days",
+                        "Status": pd.get("status_badge"),
+                        "Favorability": f"{pd.get('favorability_score')}%",
+                        "Primary Focus & Strategy": f"{pd.get('focus_theme')} {pd.get('guidance')}"
+                    })
+                st.dataframe(pd.DataFrame(pd_table_rows), width="stretch", hide_index=True)
+
+        # 0.2 Annual 10-Year Forward Forecast Roadmap
+        with sub_annual:
+            st.markdown("#### 📅 10-Year Annual Forward Forecast Roadmap")
+            st.markdown("<p style='color: #cbd5e1; font-size: 0.92rem;'>Chronological year-by-year preview covering current period and the next decade.</p>", unsafe_allow_html=True)
+            annual = timelines.get("annual_forecast", [])
+            if annual:
+                ann_table_rows = []
+                for af in annual:
+                    ann_table_rows.append({
+                        "Year (Age)": f"{af.get('year')} (Age {af.get('age_at_midyear')})",
+                        "Active Dasha": af.get("dasha"),
+                        "Favorability": f"{af.get('overall_score')}%",
+                        "Status": af.get("status_badge"),
+                        "Primary Theme": af.get("primary_theme"),
+                        "Career Outlook": af.get("career_outlook"),
+                        "Wealth Outlook": af.get("wealth_outlook"),
+                        "Relationship Outlook": af.get("relationship_outlook"),
+                        "Health Outlook": af.get("health_outlook"),
+                        "Strategic Key": af.get("key_recommendation")
+                    })
+                st.dataframe(pd.DataFrame(ann_table_rows), width="stretch", hide_index=True)
 
         # 1. Master Life Roadmap
         with sub_roadmap:
@@ -563,7 +852,7 @@ if report:
                     "Wealth": f"{item['scores']['wealth']}/100",
                     "Health": f"{item['scores']['health']}/100"
                 })
-            st.dataframe(pd.DataFrame(roadmap_rows), use_container_width=True, hide_index=True)
+            st.dataframe(pd.DataFrame(roadmap_rows), width="stretch", hide_index=True)
 
         # 2. Career Timeline
         with sub_career:
@@ -834,7 +1123,7 @@ if report:
                 "Motion": retro,
                 "Combustion": combust
             })
-        st.dataframe(pd.DataFrame(planet_table), use_container_width=True, hide_index=True)
+        st.dataframe(pd.DataFrame(planet_table), width="stretch", hide_index=True)
 
     # =============================================================
     # TAB 3: LIVE INTERNET TRANSITS (GOCHARA)
@@ -866,7 +1155,7 @@ if report:
                     "Motion": "Vakri (R)" if t["is_retrograde"] else "Direct",
                     "Combust": "Yes" if t["is_combust"] else "No"
                 })
-            st.dataframe(pd.DataFrame(df_trans), use_container_width=True, hide_index=True)
+            st.dataframe(pd.DataFrame(df_trans), width="stretch", hide_index=True)
 
         st.markdown("#### ⚡ Active Major Transit Impacts on Natal Chart")
         ss = yogas.get("sade_sati", {})
@@ -992,11 +1281,49 @@ if report:
             st.markdown(f"- {r}")
 
         st.markdown("---")
-        st.markdown("#### 💾 Export Full Kundli & Timelines Data")
-        json_str = json.dumps(report, indent=2, ensure_ascii=False)
-        st.download_button(
-            label="📥 Download Complete Report (JSON)",
-            data=json_str,
-            file_name=f"{full_name.replace(' ', '_')}_kundli_report.json",
-            mime="application/json"
-        )
+        st.markdown("### 📥 Download Complete Vedic Report")
+        st.markdown("<p style='color: #94a3b8; font-size: 0.95rem;'>Choose your preferred format to download your complete astrological birth chart, sacred Kundli diagrams, life milestones, and detailed predictive timelines.</p>", unsafe_allow_html=True)
+
+        exp_c1, exp_c2, exp_c3 = st.columns(3)
+        with exp_c1:
+            st.markdown("""
+            <div class="cosmic-card" style="text-align: center; border-color: #f59e0b; padding: 1.2rem;">
+                <h4 style="color: #fbbf24; margin-top: 0; font-size: 1.1rem;">🌐 Interactive HTML Report</h4>
+                <p style="color: #cbd5e1; font-size: 0.85rem; margin-bottom: 0.8rem;">Standalone file with embedded vector SVG charts, dark celestial aesthetics, and print-to-PDF layout.</p>
+            </div>
+            """, unsafe_allow_html=True)
+            st.download_button(
+                label="📥 Download HTML Report (Print / PDF)",
+                data=html_data,
+                file_name=f"{fname_clean}_complete_report.html",
+                mime="text/html",
+                width="stretch"
+            )
+        with exp_c2:
+            st.markdown("""
+            <div class="cosmic-card" style="text-align: center; border-color: #38bdf8; padding: 1.2rem;">
+                <h4 style="color: #38bdf8; margin-top: 0; font-size: 1.1rem;">📝 Markdown Document</h4>
+                <p style="color: #cbd5e1; font-size: 0.85rem; margin-bottom: 0.8rem;">Complete Markdown (.md) report with tables, ASCII Kundali, event milestones, and remedies.</p>
+            </div>
+            """, unsafe_allow_html=True)
+            st.download_button(
+                label="📥 Download Markdown Report (.md)",
+                data=md_data,
+                file_name=f"{fname_clean}_complete_report.md",
+                mime="text/markdown",
+                width="stretch"
+            )
+        with exp_c3:
+            st.markdown("""
+            <div class="cosmic-card" style="text-align: center; border-color: #34d399; padding: 1.2rem;">
+                <h4 style="color: #34d399; margin-top: 0; font-size: 1.1rem;">💾 JSON Data Export</h4>
+                <p style="color: #cbd5e1; font-size: 0.85rem; margin-bottom: 0.8rem;">Full nested JSON schema containing all mathematical, astronomical, and predictive variables.</p>
+            </div>
+            """, unsafe_allow_html=True)
+            st.download_button(
+                label="📥 Download Complete Data (JSON)",
+                data=json_data,
+                file_name=f"{fname_clean}_complete_report.json",
+                mime="application/json",
+                width="stretch"
+            )
