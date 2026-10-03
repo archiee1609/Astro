@@ -1,0 +1,1033 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Vedic Jyotish & Numerology Application</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #d97706;
+      --primary-dark: #b45309;
+      --primary-light: #fef3c7;
+      --bg-dark: #0f172a;
+      --bg-card: #1e293b;
+      --bg-card-alt: #334155;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --border-color: #475569;
+      --gold-gradient: linear-gradient(135deg, #f59e0b 0%, #d97706 50%, #b45309 100%);
+      --accent-red: #ef4444;
+      --accent-green: #10b981;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Inter', sans-serif;
+      background: radial-gradient(circle at 50% 0%, #1e1b4b 0%, #0f172a 100%);
+      color: var(--text-main);
+      min-height: 100vh;
+      line-height: 1.6;
+    }
+
+    header {
+      text-align: center;
+      padding: 2.5rem 1rem 1.5rem;
+      border-bottom: 1px solid rgba(217, 119, 6, 0.2);
+      background: rgba(15, 23, 42, 0.85);
+      backdrop-filter: blur(8px);
+    }
+    header h1 {
+      font-family: 'Cinzel', serif;
+      font-size: 2.3rem;
+      letter-spacing: 2px;
+      background: var(--gold-gradient);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 0.4rem;
+    }
+    header p {
+      color: var(--text-muted);
+      font-size: 0.95rem;
+      letter-spacing: 0.5px;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 2rem 1rem 4rem;
+    }
+
+    /* Input Form Card */
+    .form-card {
+      background: rgba(30, 41, 59, 0.7);
+      border: 1px solid rgba(217, 119, 6, 0.35);
+      border-radius: 12px;
+      padding: 2rem;
+      margin-bottom: 2rem;
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+    }
+    .form-card h2 {
+      font-family: 'Cinzel', serif;
+      color: #fbbf24;
+      font-size: 1.4rem;
+      margin-bottom: 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .grid-form {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 1.25rem;
+    }
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+    }
+    .form-group label {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: #cbd5e1;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .form-group input {
+      background: #0f172a;
+      border: 1px solid var(--border-color);
+      color: #fff;
+      padding: 0.75rem 1rem;
+      border-radius: 6px;
+      font-size: 0.95rem;
+      transition: all 0.2s;
+    }
+    .form-group input:focus {
+      outline: none;
+      border-color: #f59e0b;
+      box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.2);
+    }
+
+    .chips {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+      margin-top: 0.5rem;
+    }
+    .chip {
+      background: rgba(51, 65, 85, 0.7);
+      border: 1px solid rgba(148, 163, 184, 0.25);
+      color: #cbd5e1;
+      padding: 0.25rem 0.6rem;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .chip:hover {
+      background: #f59e0b;
+      color: #000;
+      border-color: #f59e0b;
+    }
+
+    .btn-submit {
+      background: var(--gold-gradient);
+      color: #000;
+      font-family: 'Cinzel', serif;
+      font-weight: 700;
+      font-size: 1.05rem;
+      letter-spacing: 1px;
+      border: none;
+      padding: 0.85rem 2rem;
+      border-radius: 6px;
+      cursor: pointer;
+      width: 100%;
+      margin-top: 1.5rem;
+      transition: transform 0.2s, box-shadow 0.2s;
+      box-shadow: 0 4px 15px rgba(217, 119, 6, 0.35);
+    }
+    .btn-submit:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(217, 119, 6, 0.45);
+    }
+    .btn-submit:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    /* Results Container & Navigation Tabs */
+    #results-area {
+      display: none;
+    }
+    .tab-bar {
+      display: flex;
+      gap: 0.5rem;
+      overflow-x: auto;
+      border-bottom: 2px solid #334155;
+      margin-bottom: 1.5rem;
+      padding-bottom: 0.5rem;
+    }
+    .tab-btn {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      font-family: 'Cinzel', serif;
+      font-weight: 600;
+      font-size: 0.95rem;
+      padding: 0.6rem 1.2rem;
+      cursor: pointer;
+      border-radius: 6px;
+      white-space: nowrap;
+      transition: all 0.2s;
+    }
+    .tab-btn:hover {
+      color: #fbbf24;
+      background: rgba(251, 191, 36, 0.08);
+    }
+    .tab-btn.active {
+      color: #fbbf24;
+      background: rgba(251, 191, 36, 0.15);
+      border-bottom: 3px solid #f59e0b;
+    }
+
+    .tab-content {
+      display: none;
+      animation: fadeIn 0.3s ease-in-out;
+    }
+    .tab-content.active {
+      display: block;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Overview Stat Cards */
+    .overview-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+    .stat-card {
+      background: rgba(30, 41, 59, 0.8);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 1.2rem 1rem;
+      text-align: center;
+      transition: border-color 0.2s;
+    }
+    .stat-card:hover {
+      border-color: #f59e0b;
+    }
+    .stat-card .label {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 0.3rem;
+    }
+    .stat-card .val {
+      font-family: 'Cinzel', serif;
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: #fbbf24;
+    }
+    .stat-card .sub {
+      font-size: 0.8rem;
+      color: #cbd5e1;
+      margin-top: 0.2rem;
+    }
+
+    /* Kundli SVG Section */
+    .charts-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+      gap: 2rem;
+      margin-bottom: 2rem;
+    }
+    .chart-box {
+      background: #1e293b;
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      padding: 1.5rem;
+      text-align: center;
+    }
+    .chart-box h3 {
+      font-family: 'Cinzel', serif;
+      color: #fbbf24;
+      margin-bottom: 1rem;
+    }
+    .svg-wrapper {
+      max-width: 420px;
+      margin: 0 auto;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+    }
+
+    /* Panchang Cards */
+    .panchang-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+      gap: 1.2rem;
+      margin-bottom: 2rem;
+    }
+    .panchang-card {
+      background: #1e293b;
+      border-left: 4px solid #f59e0b;
+      border-radius: 6px;
+      padding: 1.2rem;
+    }
+    .panchang-card h4 {
+      color: #94a3b8;
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      margin-bottom: 0.4rem;
+    }
+    .panchang-card .name {
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: #fff;
+    }
+    .panchang-card .detail {
+      font-size: 0.85rem;
+      color: #cbd5e1;
+      margin-top: 0.3rem;
+    }
+
+    /* Tables */
+    .table-responsive {
+      overflow-x: auto;
+      background: #1e293b;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      margin-bottom: 2rem;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+      font-size: 0.9rem;
+    }
+    th {
+      background: #0f172a;
+      color: #fbbf24;
+      font-family: 'Cinzel', serif;
+      font-weight: 600;
+      padding: 0.9rem 1rem;
+      border-bottom: 1px solid var(--border-color);
+    }
+    td {
+      padding: 0.8rem 1rem;
+      border-bottom: 1px solid rgba(71, 85, 105, 0.4);
+      color: #e2e8f0;
+    }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: rgba(255, 255, 255, 0.03); }
+
+    .badge {
+      display: inline-block;
+      padding: 0.2rem 0.5rem;
+      border-radius: 4px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+    .badge-green { background: rgba(16, 185, 129, 0.18); color: #34d399; }
+    .badge-red { background: rgba(239, 68, 68, 0.18); color: #f87171; }
+    .badge-yellow { background: rgba(245, 158, 11, 0.18); color: #fbbf24; }
+    .badge-blue { background: rgba(59, 130, 246, 0.18); color: #60a5fa; }
+
+    /* Yogas & Doshas Cards */
+    .dosha-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+    }
+    .dosha-card {
+      background: #1e293b;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 1.5rem;
+    }
+    .dosha-card.alert {
+      border-left: 4px solid var(--accent-red);
+    }
+    .dosha-card.safe {
+      border-left: 4px solid var(--accent-green);
+    }
+    .dosha-card h4 {
+      font-family: 'Cinzel', serif;
+      font-size: 1.1rem;
+      color: #fbbf24;
+      margin-bottom: 0.5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .dosha-card p {
+      font-size: 0.9rem;
+      color: #cbd5e1;
+      line-height: 1.5;
+    }
+    .cancellation-list {
+      margin-top: 0.75rem;
+      padding-left: 1.2rem;
+      font-size: 0.85rem;
+      color: #34d399;
+    }
+
+    /* Numerology Section */
+    .num-hero {
+      display: flex;
+      gap: 1.5rem;
+      flex-wrap: wrap;
+      margin-bottom: 2rem;
+    }
+    .num-hero-card {
+      flex: 1;
+      min-width: 250px;
+      background: linear-gradient(145deg, #1e293b 0%, #0f172a 100%);
+      border: 1px solid #d97706;
+      border-radius: 10px;
+      padding: 1.5rem;
+      text-align: center;
+    }
+    .num-hero-card .number {
+      font-family: 'Cinzel', serif;
+      font-size: 3.5rem;
+      font-weight: 800;
+      color: #fbbf24;
+      line-height: 1;
+      margin: 0.5rem 0;
+    }
+    .num-hero-card .title {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: #fff;
+    }
+    .num-hero-card .ruler {
+      font-size: 0.85rem;
+      color: #fbbf24;
+    }
+
+    /* Guidance & Remedies */
+    .guidance-box {
+      background: #1e293b;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+    .guidance-box h4 {
+      font-family: 'Cinzel', serif;
+      font-size: 1.15rem;
+      color: #fbbf24;
+      margin-bottom: 0.8rem;
+    }
+    .guidance-box p {
+      color: #cbd5e1;
+      font-size: 0.95rem;
+      line-height: 1.6;
+    }
+    .remedies-list {
+      list-style-type: none;
+      margin-top: 0.5rem;
+    }
+    .remedies-list li {
+      padding: 0.6rem 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      color: #e2e8f0;
+      font-size: 0.9rem;
+      display: flex;
+      align-items: flex-start;
+      gap: 0.6rem;
+    }
+    .remedies-list li:before {
+      content: "✦";
+      color: #f59e0b;
+      font-size: 0.8rem;
+    }
+
+    .btn-print {
+      background: rgba(51, 65, 85, 0.8);
+      color: #fbbf24;
+      border: 1px solid #f59e0b;
+      padding: 0.6rem 1.4rem;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 600;
+      margin-bottom: 1.5rem;
+      transition: all 0.2s;
+    }
+    .btn-print:hover {
+      background: #f59e0b;
+      color: #000;
+    }
+
+    /* Print Styles */
+    @media print {
+      body { background: #fff !important; color: #000 !important; }
+      header, .form-card, .tab-bar, .btn-print, .chip { display: none !important; }
+      .container { max-width: 100% !important; padding: 0 !important; }
+      #results-area { display: block !important; }
+      .tab-content { display: block !important; margin-bottom: 2rem !important; }
+      .stat-card, .chart-box, .panchang-card, .dosha-card, .num-hero-card, .guidance-box, .table-responsive {
+        background: #fff !important;
+        color: #000 !important;
+        border: 1px solid #ccc !important;
+      }
+      th { background: #eee !important; color: #000 !important; }
+      td { color: #000 !important; }
+      h2, h3, h4, .val { color: #8b4513 !important; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>ॐ VEDIC JYOTISH & NUMEROLOGY ॐ</h1>
+    <p>High-Precision Vedic Astrological Ephemeris (NASA JPL DE421) & Sankhya Shastra</p>
+  </header>
+
+  <div class="container">
+    <!-- Input Form Card -->
+    <div class="form-card">
+      <h2>✦ Enter Birth Details</h2>
+      <form id="astroForm">
+        <div class="grid-form">
+          <div class="form-group">
+            <label for="fullName">Full Name</label>
+            <input type="text" id="fullName" name="fullName" value="Arjun Sharma" required placeholder="e.g. Arjun Sharma">
+          </div>
+          <div class="form-group">
+            <label for="dob">Date of Birth</label>
+            <input type="date" id="dob" name="dob" value="1995-10-24" required>
+          </div>
+          <div class="form-group">
+            <label for="tob">Time of Birth</label>
+            <input type="time" id="tob" name="tob" value="06:30" required>
+          </div>
+          <div class="form-group">
+            <label for="pob">Place of Birth (City, Country)</label>
+            <input type="text" id="pob" name="pob" value="New Delhi, India" required placeholder="e.g. New Delhi, Mumbai, London">
+            <div class="chips">
+              <span class="chip" onclick="setPlace('New Delhi, India')">Delhi</span>
+              <span class="chip" onclick="setPlace('Mumbai, India')">Mumbai</span>
+              <span class="chip" onclick="setPlace('Bengaluru, India')">Bengaluru</span>
+              <span class="chip" onclick="setPlace('Varanasi, India')">Varanasi</span>
+              <span class="chip" onclick="setPlace('Kolkata, India')">Kolkata</span>
+              <span class="chip" onclick="setPlace('London, UK')">London</span>
+              <span class="chip" onclick="setPlace('New York, USA')">New York</span>
+            </div>
+          </div>
+        </div>
+        <button type="submit" class="btn-submit" id="submitBtn">Generate Full Vedic Horoscope & Numerology Analysis</button>
+      </form>
+    </div>
+
+    <!-- Results Area -->
+    <div id="results-area">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+        <h2 id="reportTitle" style="font-family: 'Cinzel', serif; color: #fbbf24;">Horoscope & Numerology Analysis</h2>
+        <button class="btn-print" onclick="window.print()">🖨️ Print / Save PDF</button>
+      </div>
+
+      <!-- Quick Overview Cards -->
+      <div class="overview-grid" id="quickStats"></div>
+
+      <!-- Tab Navigation -->
+      <div class="tab-bar">
+        <button class="tab-btn active" onclick="openTab('tab-timelines', this)">⏳ Event Timelines</button>
+        <button class="tab-btn" onclick="openTab('tab-charts', this)">Kundli Charts (D1 & D9)</button>
+        <button class="tab-btn" onclick="openTab('tab-planets', this)">Navagraha Positions</button>
+        <button class="tab-btn" onclick="openTab('tab-panchang', this)">Birth Panchanga</button>
+        <button class="tab-btn" onclick="openTab('tab-dasha', this)">Vimshottari Dasha</button>
+        <button class="tab-btn" onclick="openTab('tab-yogas', this)">Yogas & Doshas</button>
+        <button class="tab-btn" onclick="openTab('tab-numerology', this)">Sankhya Numerology</button>
+        <button class="tab-btn" onclick="openTab('tab-guidance', this)">Life Guidance & Remedies</button>
+      </div>
+
+      <!-- Tab: Event Timelines -->
+      <div id="tab-timelines" class="tab-content active">
+        <div class="guidance-box" style="border-left: 4px solid #f59e0b; margin-bottom: 1.5rem;">
+          <h4 id="activeTimelineHeader" style="color: #fbbf24;">Active Timeline Period</h4>
+          <p id="activeTimelineTheme" style="font-size: 1.1rem; color: #fff;"></p>
+          <div id="activeTimelineDomains" style="margin-top: 0.5rem; font-size: 0.9rem; color: #cbd5e1; line-height: 1.6;"></div>
+        </div>
+        <div class="table-responsive">
+          <table>
+            <thead>
+              <tr>
+                <th>Dasha Period</th>
+                <th>Age Range</th>
+                <th>Dates</th>
+                <th>Status</th>
+                <th>Dominant Life Theme</th>
+                <th>Overall</th>
+                <th>Career</th>
+                <th>Marriage</th>
+                <th>Wealth</th>
+                <th>Health</th>
+              </tr>
+            </thead>
+            <tbody id="timelineTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Tab 1: Kundli Charts -->
+      <div id="tab-charts" class="tab-content">
+        <div class="charts-container">
+          <div class="chart-box">
+            <h3>D1 - Lagna Rashi Chart (Birth Chart)</h3>
+            <div class="svg-wrapper" id="d1ChartSvg"></div>
+          </div>
+          <div class="chart-box">
+            <h3>D9 - Navamsha Chart (Spiritual/Dharma Chart)</h3>
+            <div class="svg-wrapper" id="d9ChartSvg"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab 2: Planetary Positions -->
+      <div id="tab-planets" class="tab-content">
+        <div class="table-responsive">
+          <table>
+            <thead>
+              <tr>
+                <th>Planet (Graha)</th>
+                <th>Rashi (Sign)</th>
+                <th>Degree</th>
+                <th>Nakshatra & Pada</th>
+                <th>Navamsha (D9)</th>
+                <th>House (Bhava)</th>
+                <th>Motion & Dignity</th>
+              </tr>
+            </thead>
+            <tbody id="planetsTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Tab 3: Panchanga -->
+      <div id="tab-panchang" class="tab-content">
+        <div class="panchang-grid" id="panchangCards"></div>
+      </div>
+
+      <!-- Tab 4: Vimshottari Dasha -->
+      <div id="tab-dasha" class="tab-content">
+        <div class="guidance-box" style="border-left: 4px solid #10b981; margin-bottom: 1.5rem;">
+          <h4>Active Planetary Period</h4>
+          <p id="activeDashaText" style="font-size: 1.1rem; color: #fff;"></p>
+          <p id="birthBalanceText" style="color: #94a3b8; font-size: 0.9rem; margin-top: 0.3rem;"></p>
+        </div>
+        <div class="table-responsive">
+          <table>
+            <thead>
+              <tr>
+                <th>Mahadasha Planet</th>
+                <th>Duration (Years)</th>
+                <th>Start Date</th>
+                <th>End Date</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="dashaTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Tab 5: Yogas & Doshas -->
+      <div id="tab-yogas" class="tab-content">
+        <div class="dosha-grid" id="doshasContainer"></div>
+        <div class="guidance-box">
+          <h4>Auspicious Vedic Yogas Identified in Birth Chart</h4>
+          <div id="beneficYogasList"></div>
+        </div>
+      </div>
+
+      <!-- Tab 6: Numerology -->
+      <div id="tab-numerology" class="tab-content">
+        <div class="num-hero" id="numHero"></div>
+        <div class="table-responsive">
+          <table>
+            <thead>
+              <tr>
+                <th>Name Component</th>
+                <th>Calculation & Compound</th>
+                <th>Root Vibration</th>
+                <th>Significance</th>
+              </tr>
+            </thead>
+            <tbody id="namankTableBody"></tbody>
+          </table>
+        </div>
+        <div class="guidance-box" id="harmonyBox"></div>
+      </div>
+
+      <!-- Tab 7: Guidance & Remedies -->
+      <div id="tab-guidance" class="tab-content">
+        <div class="guidance-box">
+          <h4>Personality & Temperament Overview</h4>
+          <p id="temperamentText"></p>
+        </div>
+        <div class="guidance-box">
+          <h4>Career & Financial Potential</h4>
+          <p id="careerText"></p>
+        </div>
+        <div class="guidance-box">
+          <h4>Relationships, Love & Marriage</h4>
+          <p id="relationshipText"></p>
+        </div>
+        <div class="guidance-box">
+          <h4>Vedic Astrological & Numerological Remedies</h4>
+          <ul class="remedies-list" id="remediesList"></ul>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    function setPlace(cityName) {
+      document.getElementById('pob').value = cityName;
+    }
+
+    function openTab(tabId, btn) {
+      document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+      document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+      document.getElementById(tabId).classList.add('active');
+      btn.classList.add('active');
+    }
+
+    document.getElementById('astroForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const submitBtn = document.getElementById('submitBtn');
+      submitBtn.disabled = true;
+      submitBtn.innerText = 'Calculating High Precision Vedic Ephemeris...';
+
+      const payload = {
+        full_name: document.getElementById('fullName').value,
+        date_of_birth: document.getElementById('dob').value,
+        time_of_birth: document.getElementById('tob').value,
+        place_of_birth: document.getElementById('pob').value
+      };
+
+      try {
+        const response = await fetch('/api/analyze', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        if (!response.ok) {
+          const err = await response.json();
+          throw new Error(err.detail || 'Calculation error');
+        }
+
+        const data = await response.json();
+        renderReport(data);
+      } catch (err) {
+        alert('Error: ' + err.message);
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.innerText = 'Generate Full Vedic Horoscope & Numerology Analysis';
+      }
+    });
+
+    function renderReport(data) {
+      document.getElementById('results-area').style.display = 'block';
+      document.getElementById('reportTitle').innerText = `${data.user_input.full_name}'s Vedic Horoscope & Numerology`;
+
+      // Quick Stats Cards
+      const lagna = data.lagna;
+      const moon = data.grahas.Moon;
+      const sun = data.grahas.Sun;
+      const mul = data.numerology.mulank;
+      const bhag = data.numerology.bhagyank;
+      const nam = data.numerology.namank;
+      const activeD = data.dashas.active_dasha;
+
+      document.getElementById('quickStats').innerHTML = `
+        <div class="stat-card">
+          <div class="label">Lagna (Ascendant)</div>
+          <div class="val">${lagna.lagna_sign}</div>
+          <div class="sub">${lagna.lagna_deg_formatted}</div>
+        </div>
+        <div class="stat-card">
+          <div class="label">Moon Sign (Rashi)</div>
+          <div class="val">${moon.sign}</div>
+          <div class="sub">${moon.nakshatra} (P${moon.nakshatra_pada})</div>
+        </div>
+        <div class="stat-card">
+          <div class="label">Sun Sign (Surya)</div>
+          <div class="val">${sun.sign}</div>
+          <div class="sub">${sun.deg_formatted}</div>
+        </div>
+        <div class="stat-card">
+          <div class="label">Mulank (Psychic No.)</div>
+          <div class="val">${mul.mulank}</div>
+          <div class="sub">${mul.ruler.split(' ')[0]}</div>
+        </div>
+        <div class="stat-card">
+          <div class="label">Bhagyank (Destiny No.)</div>
+          <div class="val">${bhag.bhagyank}</div>
+          <div class="sub">${bhag.ruler.split(' ')[0]}</div>
+        </div>
+        <div class="stat-card">
+          <div class="label">Namank (Chaldean)</div>
+          <div class="val">${nam.chaldean.namank}</div>
+          <div class="sub">Vibration ${nam.chaldean.compound_number}</div>
+        </div>
+        <div class="stat-card">
+          <div class="label">Current Active Dasha</div>
+          <div class="val" style="font-size: 1.1rem;">${activeD.formatted}</div>
+          <div class="sub">Until ${activeD.end_date}</div>
+        </div>
+      `;
+
+      // SVG Charts
+      document.getElementById('d1ChartSvg').innerHTML = data.charts.d1_svg;
+      document.getElementById('d9ChartSvg').innerHTML = data.charts.d9_svg;
+
+      // Planets Table
+      let tableRows = `
+        <tr style="font-weight: bold; background: rgba(245, 158, 11, 0.08);">
+          <td>Ascendant (Lagna)</td>
+          <td>${lagna.lagna_sign}</td>
+          <td>${lagna.lagna_deg_formatted}</td>
+          <td>${lagna.lagna_nakshatra} (P${lagna.lagna_nakshatra_pada})</td>
+          <td>${lagna.lagna_navamsha_sign}</td>
+          <td>House 1</td>
+          <td><span class="badge badge-yellow">Lagna Cusp</span></td>
+        </tr>
+      `;
+
+      const order = ["Sun", "Moon", "Mars", "Mercury", "Jupiter", "Venus", "Saturn", "Rahu", "Ketu"];
+      for (const p of order) {
+        const g = data.grahas[p];
+        let badges = [];
+        if (g.is_retrograde && p !== "Rahu" && p !== "Ketu") badges.push('<span class="badge badge-red">Retrograde (V)</span>');
+        if (g.is_combust) badges.push('<span class="badge badge-red">Combust (C)</span>');
+
+        if (g.dignity.includes("Exalted") || g.dignity.includes("Own Sign") || g.dignity.includes("Moolatrikona")) {
+          badges.push(`<span class="badge badge-green">${g.dignity}</span>`);
+        } else if (g.dignity.includes("Debilitated") || g.dignity.includes("Enemy")) {
+          badges.push(`<span class="badge badge-red">${g.dignity}</span>`);
+        } else {
+          badges.push(`<span class="badge badge-blue">${g.dignity}</span>`);
+        }
+
+        tableRows += `
+          <tr>
+            <td><strong>${g.name}</strong> <span style="font-size: 0.8rem; color: #94a3b8;">${g.sanskrit.split(' ')[0]}</span></td>
+            <td>${g.sign}</td>
+            <td>${g.deg_formatted}</td>
+            <td>${g.nakshatra} (P${g.nakshatra_pada})</td>
+            <td>${g.navamsha_sign}</td>
+            <td>House ${g.house}</td>
+            <td>${badges.join(' ')}</td>
+          </tr>
+        `;
+      }
+      document.getElementById('planetsTableBody').innerHTML = tableRows;
+
+      // Panchanga Cards
+      const pan = data.panchang;
+      document.getElementById('panchangCards').innerHTML = `
+        <div class="panchang-card">
+          <h4>Vara (Solar Day)</h4>
+          <div class="name">${pan.vara.name}</div>
+          <div class="detail">Ruler: ${pan.vara.lord}</div>
+        </div>
+        <div class="panchang-card">
+          <h4>Tithi (Lunar Day)</h4>
+          <div class="name">${pan.tithi.name}</div>
+          <div class="detail">${pan.tithi.paksha} (${pan.tithi.completion_percent}% complete)</div>
+        </div>
+        <div class="panchang-card">
+          <h4>Nakshatra (Moon Mansion)</h4>
+          <div class="name">${pan.nakshatra.name}</div>
+          <div class="detail">Pada ${pan.nakshatra.pada} | Lord: ${pan.nakshatra.lord}</div>
+        </div>
+        <div class="panchang-card">
+          <h4>Yoga (Solilunar)</h4>
+          <div class="name">${pan.yoga.name}</div>
+          <div class="detail">${pan.yoga.nature}</div>
+        </div>
+        <div class="panchang-card">
+          <h4>Karana (Half Tithi)</h4>
+          <div class="name">${pan.karana.name}</div>
+          <div class="detail">Karana Index: ${pan.karana.number}</div>
+        </div>
+      `;
+
+      // Timelines Section
+      if (data.timelines) {
+        const act = data.timelines.active_period_summary || {};
+        document.getElementById('activeTimelineHeader').innerText = `Current Life Period: ${act.dasha} (${act.period}) | ${act.age}`;
+        document.getElementById('activeTimelineTheme').innerText = `Dominant Theme: ${act.dominant_theme}`;
+        document.getElementById('activeTimelineDomains').innerHTML = `
+          <div>💼 <strong>Career:</strong> ${act.career_status} — <em>${act.career_recommendation}</em></div>
+          <div style="margin-top:0.3rem;">💍 <strong>Marriage & Relationships:</strong> ${act.marriage_status} — <em>${act.marriage_recommendation}</em></div>
+          <div style="margin-top:0.3rem;">💰 <strong>Wealth & Assets:</strong> ${act.wealth_status} — <em>${act.wealth_recommendation}</em></div>
+          <div style="margin-top:0.3rem;">🌿 <strong>Health & Vitality:</strong> ${act.health_status} — <em>${act.health_recommendation}</em></div>
+        `;
+
+        let tlRows = '';
+        for (const item of (data.timelines.master_roadmap || [])) {
+          tlRows += `
+            <tr style="${item.is_current ? 'background: rgba(16, 185, 129, 0.15); font-weight: bold;' : ''}">
+              <td><strong>${item.dasha}</strong></td>
+              <td>${item.age_display}</td>
+              <td>${item.start_date} to ${item.end_date}</td>
+              <td>${item.is_current ? '<span class="badge badge-green">Running Now</span>' : item.status_badge}</td>
+              <td>${item.dominant_theme}</td>
+              <td><strong style="color: #fbbf24;">${item.overall_score}%</strong></td>
+              <td>${item.scores.career}</td>
+              <td>${item.scores.marriage}</td>
+              <td>${item.scores.wealth}</td>
+              <td>${item.scores.health}</td>
+            </tr>
+          `;
+        }
+        document.getElementById('timelineTableBody').innerHTML = tlRows;
+      }
+
+      // Dasha Section
+      document.getElementById('activeDashaText').innerText = `Running Period: Mahadasha of ${activeD.mahadasha} - Antardasha of ${activeD.antardasha} (Active until ${activeD.end_date})`;
+      document.getElementById('birthBalanceText').innerText = `Birth Dasha Balance: ${data.dashas.balance_at_birth.formatted}`;
+
+      let dashaRows = '';
+      for (const md of data.dashas.timeline) {
+        const isCurrent = md.planet === activeD.mahadasha;
+        dashaRows += `
+          <tr style="${isCurrent ? 'background: rgba(16, 185, 129, 0.1); font-weight: bold;' : ''}">
+            <td>${md.planet}</td>
+            <td>${md.period_years} Years</td>
+            <td>${md.start_date}</td>
+            <td>${md.end_date}</td>
+            <td>${isCurrent ? '<span class="badge badge-green">Running Now</span>' : '<span style="color:#64748b;">Completed/Upcoming</span>'}</td>
+          </tr>
+        `;
+      }
+      document.getElementById('dashaTableBody').innerHTML = dashaRows;
+
+      // Yogas & Doshas
+      const yog = data.yogas_and_doshas;
+      const mang = yog.manglik_dosha;
+      const sade = yog.sade_sati;
+      const kaal = yog.kaal_sarp_dosha;
+
+      let cancelHtml = '';
+      if (mang.cancellations && mang.cancellations.length > 0) {
+        cancelHtml = `<ul class="cancellation-list">${mang.cancellations.map(c => `<li>✓ ${c}</li>`).join('')}</ul>`;
+      }
+
+      document.getElementById('doshasContainer').innerHTML = `
+        <div class="dosha-card ${mang.has_dosha && !mang.is_cancelled ? 'alert' : 'safe'}">
+          <h4>Manglik (Kuja) Dosha <span>${mang.severity}</span></h4>
+          <p>${mang.description}</p>
+          ${cancelHtml}
+        </div>
+        <div class="dosha-card ${sade.is_sade_sati ? 'alert' : 'safe'}">
+          <h4>Shani Sade Sati <span>${sade.phase}</span></h4>
+          <p>${sade.description}</p>
+        </div>
+        <div class="dosha-card ${kaal.has_dosha ? 'alert' : 'safe'}">
+          <h4>Kaal Sarp Dosha <span>${kaal.severity}</span></h4>
+          <p>${kaal.description}</p>
+        </div>
+      `;
+
+      // Benefic Yogas
+      let yogasHtml = '';
+      if (yog.benefic_yogas && yog.benefic_yogas.length > 0) {
+        yogasHtml = yog.benefic_yogas.map(y => `
+          <div style="margin-bottom: 0.8rem; padding-bottom: 0.8rem; border-bottom: 1px solid rgba(255,255,255,0.06);">
+            <strong style="color: #34d399;">✦ ${y.name}</strong> <span style="font-size: 0.8rem; color: #94a3b8;">(${y.category})</span>
+            <p style="font-size: 0.85rem; color: #cbd5e1; margin-top: 0.2rem;">${y.description}</p>
+          </div>
+        `).join('');
+      } else {
+        yogasHtml = '<p style="color: #94a3b8;">No major classical Raja Yogas active in primary angles.</p>';
+      }
+      document.getElementById('beneficYogasList').innerHTML = yogasHtml;
+
+      // Numerology
+      document.getElementById('numHero').innerHTML = `
+        <div class="num-hero-card">
+          <div class="title">Mulank (Psychic / Birth No.)</div>
+          <div class="number">${mul.mulank}</div>
+          <div class="ruler">${mul.ruler}</div>
+          <p style="font-size: 0.85rem; color: #cbd5e1; margin-top: 0.5rem;">${mul.archetype}</p>
+        </div>
+        <div class="num-hero-card">
+          <div class="title">Bhagyank (Destiny Path No.)</div>
+          <div class="number">${bhag.bhagyank}</div>
+          <div class="ruler">${bhag.ruler}</div>
+          <p style="font-size: 0.85rem; color: #cbd5e1; margin-top: 0.5rem;">${bhag.life_purpose}</p>
+        </div>
+        <div class="num-hero-card">
+          <div class="title">Chaldean Namank (Name No.)</div>
+          <div class="number">${nam.chaldean.namank}</div>
+          <div class="ruler">Compound ${nam.chaldean.compound_number}</div>
+          <p style="font-size: 0.85rem; color: #cbd5e1; margin-top: 0.5rem;">${nam.chaldean.meaning}</p>
+        </div>
+      `;
+
+      document.getElementById('namankTableBody').innerHTML = `
+        <tr>
+          <td><strong>Full Name (Chaldean)</strong></td>
+          <td>Compound Sum: ${nam.chaldean.compound_number}</td>
+          <td><span class="badge badge-yellow">Number ${nam.chaldean.namank}</span></td>
+          <td>${nam.chaldean.meaning}</td>
+        </tr>
+        <tr>
+          <td><strong>Pythagorean Expression</strong></td>
+          <td>Compound Sum: ${nam.pythagorean.compound_number}</td>
+          <td><span class="badge badge-blue">Number ${nam.pythagorean.namank}</span></td>
+          <td>Western expression vibration frequency</td>
+        </tr>
+        <tr>
+          <td><strong>Soul Urge (Heart's Desire)</strong></td>
+          <td>Vowels (${nam.soul_urge.vowels_found}): ${nam.soul_urge.compound}</td>
+          <td><span class="badge badge-green">Number ${nam.soul_urge.number}</span></td>
+          <td>${nam.soul_urge.meaning}</td>
+        </tr>
+        <tr>
+          <td><strong>Outer Personality</strong></td>
+          <td>Consonants Sum: ${nam.personality.compound}</td>
+          <td><span class="badge badge-blue">Number ${nam.personality.number}</span></td>
+          <td>${nam.personality.meaning}</td>
+        </tr>
+      `;
+
+      const harm = data.numerology.harmony;
+      document.getElementById('harmonyBox').innerHTML = `
+        <h4>Tripartite Numerology Harmony Score: <span style="color: #34d399;">${harm.harmony_score} / 100</span></h4>
+        <div style="margin: 0.8rem 0; background: #0f172a; height: 10px; border-radius: 5px; overflow: hidden;">
+          <div style="width: ${harm.harmony_score}%; background: var(--gold-gradient); height: 100%;"></div>
+        </div>
+        <p><strong>Mulank vs Bhagyank:</strong> ${harm.mulank_vs_bhagyank} | <strong>Name vs Mulank:</strong> ${harm.namank_vs_mulank} | <strong>Name vs Bhagyank:</strong> ${harm.namank_vs_bhagyank}</p>
+        <p style="margin-top: 0.5rem; font-size: 0.95rem; color: #fef08a;">${harm.recommendation}</p>
+      `;
+
+      // Guidance & Remedies
+      const guide = data.guidance;
+      document.getElementById('temperamentText').innerText = guide.temperament_summary;
+      document.getElementById('careerText').innerText = guide.career_and_wealth;
+      document.getElementById('relationshipText').innerText = guide.relationships_and_marriage;
+      document.getElementById('remediesList').innerHTML = guide.remedies.map(r => `<li>${r}</li>`).join('');
+
+      // Scroll smoothly to results
+      document.getElementById('results-area').scrollIntoView({ behavior: 'smooth' });
+    }
+  </script>
+</body>
+</html>
